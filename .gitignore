@@ -16,6 +16,7 @@
 */.gradle/
 .gradle/
 */build/
+/build/
 */out/
 
 # Package Files #

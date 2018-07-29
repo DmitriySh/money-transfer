@@ -8,14 +8,34 @@
 
 plugins {
     id 'java-library'
-}
-
-dependencies {
-    implementation 'com.google.guava:guava:23.0'
-
-    testImplementation 'junit:junit:4.12'
+    id 'org.springframework.boot' version '2.0.3.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.5.RELEASE'
 }
 
 repositories {
     jcenter()
+    maven { url "http://repo.spring.io/libs-release" }
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation 'com.google.guava:guava:23.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+}
+
+build {
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+bootJar {
+    baseName = project.name + '-all'
+    enabled = true
+    launchScript()
 }

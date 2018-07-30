@@ -4,20 +4,16 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.Date;
-
-import static javax.persistence.TemporalType.TIMESTAMP;
+import java.time.Instant;
 
 @Data
 @Entity
 @Table(name = "account")
 public class Account {
-
     @Id
     @GeneratedValue
     private Long id;
     private BigDecimal amount;
-    @Temporal(TIMESTAMP)
-    private Date lastUpdate;
-
+    @Basic
+    private Instant lastUpdate;
 }

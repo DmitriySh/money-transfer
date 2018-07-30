@@ -31,13 +31,9 @@ public class ApiController {
 
     @PutMapping("/accounts/transfer")
     public ResponseEntity<List<Account>> transfer(@RequestBody Transfer transfer) {
-        try {
-            List<Account> accounts = service.transfer(requireNonNull(transfer.getFrom()), requireNonNull(transfer.getTo()), transfer.getAmount());
-            return new ResponseEntity<>(accounts, OK);
-        } catch (Exception e) {
-            log.error("transfer error", e);
-            return new ResponseEntity<>(BAD_REQUEST);
-        }
+        return service.transfer(requireNonNull(transfer.getFrom()), requireNonNull(transfer.getTo()), transfer.getAmount())
+                .map(a -> new ResponseEntity<>(a, OK))
+                .orElseGet(() -> new ResponseEntity<>(BAD_REQUEST));
     }
 
     @GetMapping("/account/{accNumber}")
@@ -49,23 +45,15 @@ public class ApiController {
 
     @PutMapping("/account/deposit")
     public ResponseEntity<Account> deposit(@RequestBody Transfer transfer) {
-        try {
-            Account account = service.deposit(requireNonNull(transfer.getTo()), transfer.getAmount());
-            return new ResponseEntity<>(account, OK);
-        } catch (Exception e) {
-            log.error("transfer error", e);
-            return new ResponseEntity<>(BAD_REQUEST);
-        }
+        return service.deposit(requireNonNull(transfer.getTo()), transfer.getAmount())
+                .map(a -> new ResponseEntity<>(a, OK))
+                .orElseGet(() -> new ResponseEntity<>(BAD_REQUEST));
     }
 
     @PutMapping("/account/withdraw")
     public ResponseEntity<Account> withdraw(@RequestBody Transfer transfer) {
-        try {
-            Account account = service.withdraw(requireNonNull(transfer.getFrom()), transfer.getAmount());
-            return new ResponseEntity<>(account, OK);
-        } catch (Exception e) {
-            log.error("transfer error", e);
-            return new ResponseEntity<>(BAD_REQUEST);
-        }
+        return service.withdraw(requireNonNull(transfer.getFrom()), transfer.getAmount())
+                .map(a -> new ResponseEntity<>(a, OK))
+                .orElseGet(() -> new ResponseEntity<>(BAD_REQUEST));
     }
 }

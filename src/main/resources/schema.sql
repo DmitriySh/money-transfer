@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS account
+(
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  acc_number BIGINT NOT NULL,
+  amount DECIMAL(20, 2) DEFAULT 0,
+  last_update TIMESTAMP DEFAULT current_timestamp
+);

@@ -26,7 +26,7 @@ public class RequestController {
         return "RESTfull API for money transfer";
     }
 
-    @PutMapping("/transfer")
+    @PutMapping("/accounts/transfer")
     public void transfer(@RequestBody Transfer transfer) {
         long from = transfer.getFrom();
         long to = transfer.getTo();
@@ -49,15 +49,15 @@ public class RequestController {
                 .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
     }
 
-    @PutMapping("/account/{id}/put/{amount}")
-    public void putUp(@PathVariable("id") long id, @PathVariable BigDecimal amount) {
-        log.debug("put account: {}, amount: {}", id, amount);
+    @PutMapping("/account/deposit")
+    public void deposit(@RequestBody Transfer transfer) {
+        log.debug("put account: {}, amount: {}", transfer.getTo(), transfer.getAmount());
         // TODO: 30.07.2018 impl
     }
 
-    @PutMapping("/account/{id}/withdraw/{amount}")
-    public void withdraw(@PathVariable("id") long id, @PathVariable BigDecimal amount) {
-        log.debug("withdraw account: {}, amount: {}", id, amount);
+    @PutMapping("/account/withdraw")
+    public void withdraw(@RequestBody Transfer transfer) {
+        log.debug("withdraw account: {}, amount: {}", transfer.getFrom(), transfer.getAmount());
         // TODO: 30.07.2018 impl
     }
 }

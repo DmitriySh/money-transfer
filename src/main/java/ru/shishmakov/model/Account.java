@@ -15,6 +15,7 @@ public class Account {
     @Id
     @GeneratedValue
     private Long id;
+    private Long accNumber;
     private BigDecimal amount;
     @Basic
     private Instant lastUpdate;

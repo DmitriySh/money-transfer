@@ -3,10 +3,12 @@ package ru.shishmakov.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.shishmakov.dao.AccountRepository;
 import ru.shishmakov.model.Account;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,18 +28,45 @@ public class AccountService {
         return repository.findById(id);
     }
 
-    public void withdraw(long from, BigDecimal amount) {
-        log.debug("withdraw account: {}, amount: {}", from, amount);
+    @Transactional(rollbackFor = Exception.class)
+    public void withdraw(long number, BigDecimal amount) {
+        log.debug("withdraw account: {}, amount: {}", number, amount);
         // TODO: 30.07.2018 impl
     }
 
-    public void deposit(long to, BigDecimal amount) {
-        log.debug("deposit account: {}, amount: {}", to, amount);
+    @Transactional(rollbackFor = Exception.class)
+    public void deposit(long number, BigDecimal amount) {
+        log.debug("deposit account: {}, amount: {}", number, amount);
         // TODO: 30.07.2018 impl
     }
 
-    public void transfer(long from, long to, BigDecimal amount) {
+    @Transactional(rollbackFor = Exception.class)
+    public void transfer(long number1, long number2, BigDecimal amount) {
+        long from = number1 < number2 ? number1 : number2;
+        long to = number1 < number2 ? number2 : number1;
+
+        Account fromAccount = repository.findByAccNumberAndLock(from).orElseThrow(() -> new IllegalArgumentException("not found id: " + from));
+        Account toAccount = repository.findByAccNumberAndLock(to).orElseThrow(() -> new IllegalArgumentException("not found id: " + to));
+        decreaseAmount(amount, fromAccount);
+        increaseAmount(amount, toAccount);
+        checkAmount(fromAccount);
+
+        repository.save(fromAccount);
+        repository.save(toAccount);
         log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
-        // TODO: 30.07.2018 impl
+    }
+
+    private static void increaseAmount(BigDecimal amount, Account account) {
+        account.setAmount(account.getAmount().add(amount));
+        account.setLastUpdate(Instant.now());
+    }
+
+    private static void decreaseAmount(BigDecimal amount, Account account) {
+        account.setAmount(account.getAmount().subtract(amount));
+        account.setLastUpdate(Instant.now());
+    }
+
+    private static void checkAmount(Account fromAccount) {
+        if (BigDecimal.ZERO.compareTo(fromAccount.getAmount()) > 0) throw new IllegalArgumentException();
     }
 }

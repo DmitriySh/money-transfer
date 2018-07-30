@@ -8,14 +8,15 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shishmakov.model.Account;
 
-import javax.persistence.LockModeType;
 import java.util.Optional;
+
+import static javax.persistence.LockModeType.PESSIMISTIC_WRITE;
 
 @Repository
 @Transactional(readOnly = true)
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select a from Account a where a.id = :id")
-    Optional<Account> findByIdAndLock(@Param("id") long id);
+    @Lock(PESSIMISTIC_WRITE)
+    @Query("select a from Account a where a.accNumber = :accNumber")
+    Optional<Account> findByAccNumberAndLock(@Param("accNumber") long accNumber);
 }

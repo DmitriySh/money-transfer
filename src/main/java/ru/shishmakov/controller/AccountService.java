@@ -23,50 +23,59 @@ public class AccountService {
         return repository.findAll();
     }
 
-    public Optional<Account> getAccount(long id) {
-        log.debug("get: {}", id);
-        return repository.findById(id);
+    public Optional<Account> getAccount(long accNumber) {
+        log.debug("get: {}", accNumber);
+        return repository.findByAccNumber(accNumber);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void withdraw(long number, BigDecimal amount) {
+    public Account withdraw(long number, BigDecimal amount) {
+        checkAmount(amount);
+        Account account = repository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        decreaseAmount(account, amount);
+
         log.debug("withdraw account: {}, amount: {}", number, amount);
-        // TODO: 30.07.2018 impl
+        return repository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void deposit(long number, BigDecimal amount) {
+    public Account deposit(long number, BigDecimal amount) {
+        checkAmount(amount);
+        Account account = repository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        increaseAmount(account, amount);
+
         log.debug("deposit account: {}, amount: {}", number, amount);
-        // TODO: 30.07.2018 impl
+        return repository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void transfer(long number1, long number2, BigDecimal amount) {
-        long from = number1 < number2 ? number1 : number2;
-        long to = number1 < number2 ? number2 : number1;
+    public List<Account> transfer(long from, long to, BigDecimal amount) {
+        checkAmount(amount);
+        long first = from < to ? from : to;
+        long second = from < to ? to : from;
 
-        Account fromAccount = repository.findByAccNumberAndLock(from).orElseThrow(() -> new IllegalArgumentException("not found id: " + from));
-        Account toAccount = repository.findByAccNumberAndLock(to).orElseThrow(() -> new IllegalArgumentException("not found id: " + to));
-        decreaseAmount(amount, fromAccount);
-        increaseAmount(amount, toAccount);
-        checkAmount(fromAccount);
+        Account firstAccount = repository.findByAccNumberAndLock(first)
+                .orElseThrow(() -> new IllegalArgumentException("not found id: " + first));
+        Account secondAccount = repository.findByAccNumberAndLock(second)
+                .orElseThrow(() -> new IllegalArgumentException("not found id: " + second));
+        decreaseAmount(firstAccount.getAccNumber().equals(from) ? firstAccount : secondAccount, amount);
+        increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
 
-        repository.save(fromAccount);
-        repository.save(toAccount);
         log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
+        return repository.saveAll(List.of(firstAccount, secondAccount));
     }
 
-    private static void increaseAmount(BigDecimal amount, Account account) {
+    private static void increaseAmount(Account account, BigDecimal amount) {
         account.setAmount(account.getAmount().add(amount));
         account.setLastUpdate(Instant.now());
     }
 
-    private static void decreaseAmount(BigDecimal amount, Account account) {
+    private static void decreaseAmount(Account account, BigDecimal amount) {
         account.setAmount(account.getAmount().subtract(amount));
         account.setLastUpdate(Instant.now());
     }
 
-    private static void checkAmount(Account fromAccount) {
-        if (BigDecimal.ZERO.compareTo(fromAccount.getAmount()) > 0) throw new IllegalArgumentException();
+    private static void checkAmount(BigDecimal amount) {
+        if (BigDecimal.ZERO.compareTo(amount) > 0) throw new IllegalArgumentException("not positive amount: " + amount);
     }
 }

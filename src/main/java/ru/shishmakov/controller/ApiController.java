@@ -24,38 +24,48 @@ public class ApiController {
         return "RESTfull API for money transfer";
     }
 
+    @GetMapping("/accounts")
+    public ResponseEntity<List<Account>> getAccounts() {
+        return new ResponseEntity<>(service.getAccounts(), OK);
+    }
+
     @PutMapping("/accounts/transfer")
-    public ResponseEntity<Void> transfer(@RequestBody Transfer transfer) {
+    public ResponseEntity<List<Account>> transfer(@RequestBody Transfer transfer) {
         try {
-            service.transfer(requireNonNull(transfer.getFrom()),
-                    requireNonNull(transfer.getTo()),
-                    requireNonNull(transfer.getAmount()));
-            return new ResponseEntity<>(OK);
+            List<Account> accounts = service.transfer(requireNonNull(transfer.getFrom()), requireNonNull(transfer.getTo()), transfer.getAmount());
+            return new ResponseEntity<>(accounts, OK);
         } catch (Exception e) {
             log.error("transfer error", e);
             return new ResponseEntity<>(BAD_REQUEST);
         }
     }
 
-    @GetMapping("/accounts")
-    public ResponseEntity<List<Account>> getAccounts() {
-        return new ResponseEntity<>(service.getAccounts(), OK);
-    }
-
-    @GetMapping("/account/{id}")
-    public ResponseEntity<Account> getAccount(@PathVariable("id") long id) {
-        return service.getAccount(id)
+    @GetMapping("/account/{accNumber}")
+    public ResponseEntity<Account> getAccount(@PathVariable("accNumber") long accNumber) {
+        return service.getAccount(accNumber)
                 .map(a -> new ResponseEntity<>(a, OK))
                 .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
     }
 
     @PutMapping("/account/deposit")
-    public void deposit(@RequestBody Transfer transfer) {
-        service.deposit(requireNonNull(transfer.getTo()), requireNonNull(transfer.getAmount()));
+    public ResponseEntity<Account> deposit(@RequestBody Transfer transfer) {
+        try {
+            Account account = service.deposit(requireNonNull(transfer.getTo()), transfer.getAmount());
+            return new ResponseEntity<>(account, OK);
+        } catch (Exception e) {
+            log.error("transfer error", e);
+            return new ResponseEntity<>(BAD_REQUEST);
+        }
     }
 
     @PutMapping("/account/withdraw")
-    public void withdraw(@RequestBody Transfer transfer) {
-        service.withdraw(requireNonNull(transfer.getFrom()), requireNonNull(transfer.getAmount()));
+    public ResponseEntity<Account> withdraw(@RequestBody Transfer transfer) {
+        try {
+            Account account = service.withdraw(requireNonNull(transfer.getFrom()), transfer.getAmount());
+            return new ResponseEntity<>(account, OK);
+        } catch (Exception e) {
+            log.error("transfer error", e);
+            return new ResponseEntity<>(BAD_REQUEST);
+        }
     }
 }

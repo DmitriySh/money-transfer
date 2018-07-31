@@ -1,7 +1,12 @@
 Money transfer app
 =======
 
-Use Java, in-memory database H2 and Spring Boot to make an example of the web app to transfer money between different accounts. 
+My pet project.
+This is a prototype of bank transfer of funds between accounts. That project uses `Java`, in-memory database `H2` and `Spring Boot` framework to make an example of the web app to:
+ - transfer money between different accounts,
+ - make a deposit to the account,
+ - make a withdrawal from the account
+ - the negative account balance is not allowed
 
 ## Requirements:
   * Java SE Development Kit 9

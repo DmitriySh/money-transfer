@@ -33,8 +33,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -158,8 +156,7 @@ public class ApiControllerTest {
         Account from = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
-        doReturn(Optional.of(from)).when(accountRepository).findByAccNumberAndLock(eq(from.getAccNumber()));
-        doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(eq(to.getAccNumber()));
+        doReturn(Optional.of(from)).doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).saveAll(anyList());
         doNothing().when(accountService).updateDate(any(Account.class));
 
@@ -178,6 +175,7 @@ public class ApiControllerTest {
 
         verify(accountService).transfer(anyLong(), anyLong(), any(BigDecimal.class));
         verify(accountRepository, times(2)).findByAccNumberAndLock(anyLong());
+        verify(accountRepository).saveAll(anyIterable());
     }
 
     @Test
@@ -197,6 +195,8 @@ public class ApiControllerTest {
         assertThat(response.getContentAsString()).isBlank();
 
         verify(accountService).transfer(anyLong(), anyLong(), any(BigDecimal.class));
+        verify(accountRepository, never()).findByAccNumberAndLock(anyLong());
+        verify(accountRepository, never()).saveAll(anyIterable());
     }
 
     @Test
@@ -214,5 +214,67 @@ public class ApiControllerTest {
         assertThat(response.getContentAsString()).isBlank();
 
         verify(accountService, never()).transfer(anyLong(), anyLong(), any(BigDecimal.class));
+    }
+
+    @Test
+    public void putDepositShouldPerformIfRequestValid() throws Exception {
+        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
+        Transfer transfer = Transfer.builder().to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
+        doAnswer(in -> in.getArguments()[0]).when(accountRepository).save(any(Account.class));
+        doNothing().when(accountService).updateDate(any(Account.class));
+
+        MockHttpServletResponse response = mockMvc
+                .perform(put("/api/account/deposit")
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(OK.value());
+        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
+        assertThat(response.getContentAsString()).isEqualTo(json.write(
+                Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).lastUpdate(ct).build()
+        ).getJson());
+
+        verify(accountService).deposit(anyLong(), any(BigDecimal.class));
+        verify(accountRepository).findByAccNumberAndLock(anyLong());
+        verify(accountRepository).save(any(Account.class));
+    }
+
+    @Test
+    public void putDepositShouldNotPerformIfAmountNegative() throws Exception {
+        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
+        Transfer transfer = Transfer.builder().to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
+
+        MockHttpServletResponse response = mockMvc
+                .perform(put("/api/account/deposit")
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.value());
+        assertThat(response.getContentType()).isNull();
+        assertThat(response.getContentAsString()).isBlank();
+
+        verify(accountService).deposit(anyLong(), any(BigDecimal.class));
+        verify(accountRepository, never()).findByAccNumberAndLock(anyLong());
+        verify(accountRepository, never()).save(any(Account.class));
+    }
+
+    @Test
+    public void putDepositShouldNotPerformIfTransferObjectNotValid() throws Exception {
+        Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
+
+        MockHttpServletResponse response = mockMvc
+                .perform(put("/api/account/deposit")
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.value());
+        assertThat(response.getContentType()).isNull();
+        assertThat(response.getContentAsString()).isEmpty();
+
+        verify(accountService, never()).deposit(anyLong(), any(BigDecimal.class));
     }
 }

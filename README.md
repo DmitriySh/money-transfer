@@ -7,6 +7,11 @@ This is a prototype of bank transfer of funds between accounts. That project use
  - make a deposit to the account,
  - make a withdrawal from the account
  - the negative account balance is not allowed
+ 
+Acces to database web console:
+ - http://localhost:8080/h2-console
+ - jdbc url `jdbc:h2:mem:testdb`
+ - user name `sa`
 
 ## Requirements:
   * Java SE Development Kit 9

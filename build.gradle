@@ -30,6 +30,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.github.stefanbirkner:system-rules:1.18.0'
 }
 
 build {

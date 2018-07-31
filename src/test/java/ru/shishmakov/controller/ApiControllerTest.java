@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -55,6 +57,9 @@ public class ApiControllerTest {
 
     private static final Instant ct = Instant.now();
 
+    private JacksonTester<Object> json;
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().muteForSuccessfulTests();
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -63,8 +68,6 @@ public class ApiControllerTest {
     private LogRepository logRepository;
     @SpyBean
     private AccountService accountService;
-
-    private JacksonTester<Object> json;
 
     @Before
     public void setUp() {

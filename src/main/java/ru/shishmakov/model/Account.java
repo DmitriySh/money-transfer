@@ -1,7 +1,7 @@
 package ru.shishmakov.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -13,7 +13,11 @@ import java.time.Instant;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
-@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
 @Entity
 public class Account {
     @Id

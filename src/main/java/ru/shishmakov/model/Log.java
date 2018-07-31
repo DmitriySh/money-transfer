@@ -15,12 +15,12 @@ import java.time.Instant;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static javax.persistence.GenerationType.IDENTITY;
 
-@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
+@Entity
 public class Log {
     @Id
     @GeneratedValue(strategy = IDENTITY)

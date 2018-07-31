@@ -1,13 +1,17 @@
 package ru.shishmakov.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
 
-@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class Transfer {
     @Nullable
     private Long from;

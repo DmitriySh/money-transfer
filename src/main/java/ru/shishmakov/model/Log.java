@@ -1,7 +1,8 @@
 package ru.shishmakov.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -11,21 +12,32 @@ import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static javax.persistence.GenerationType.IDENTITY;
 
-@Data
 @Entity
-public class Account {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
+public class Log {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @JsonIgnore
     private Long id;
 
-    private Long accNumber;
+    @JsonInclude(NON_NULL)
+    private Long fromNumber;
+
+    @JsonInclude(NON_NULL)
+    private Long toNumber;
 
     @PositiveOrZero
     private BigDecimal amount;
 
+    private String description;
+
     @Basic
-    private Instant lastUpdate;
+    private Instant date;
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.shishmakov.model.Account;
+import ru.shishmakov.model.Log;
 import ru.shishmakov.model.Transfer;
 
 import java.util.List;
@@ -22,6 +23,11 @@ public class ApiController {
     @GetMapping()
     public String hello() {
         return "RESTfull API for money transfer";
+    }
+
+    @GetMapping("/logs")
+    public ResponseEntity<List<Log>> getLogRecords() {
+        return new ResponseEntity<>(service.getLogRecords(), OK);
     }
 
     @GetMapping("/accounts")

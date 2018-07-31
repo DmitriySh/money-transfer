@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shishmakov.dao.AccountRepository;
+import ru.shishmakov.dao.LogRepository;
 import ru.shishmakov.model.Account;
+import ru.shishmakov.model.Log;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -16,36 +18,44 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class AccountService {
-    private final AccountRepository repository;
+    private final AccountRepository accRepository;
+    private final LogRepository logRepository;
 
     public List<Account> getAccounts() {
         log.debug("get all accounts");
-        return repository.findAll();
+        return accRepository.findAll();
+    }
+
+    public List<Log> getLogRecords() {
+        log.debug("get log records");
+        return logRepository.findAll();
     }
 
     public Optional<Account> getAccount(long accNumber) {
         log.debug("get account: {}", accNumber);
-        return repository.findByAccNumber(accNumber);
+        return accRepository.findByAccNumber(accNumber);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public Account withdraw(long number, BigDecimal amount) {
         checkAmount(amount);
-        Account account = repository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        Account account = accRepository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
         decreaseAmount(account, amount);
 
         log.debug("withdraw account: {}, amount: {}", number, amount);
-        return repository.save(account);
+        logRepository.save(Log.builder().fromNumber(number).amount(amount).description("withdraw").date(Instant.now()).build());
+        return accRepository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public Account deposit(long number, BigDecimal amount) {
         checkAmount(amount);
-        Account account = repository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        Account account = accRepository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
         increaseAmount(account, amount);
 
         log.debug("deposit account: {}, amount: {}", number, amount);
-        return repository.save(account);
+        logRepository.save(Log.builder().toNumber(number).amount(amount).description("deposit").date(Instant.now()).build());
+        return accRepository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -54,15 +64,16 @@ public class AccountService {
         long first = from < to ? from : to;
         long second = from < to ? to : from;
 
-        Account firstAccount = repository.findByAccNumberAndLock(first)
+        Account firstAccount = accRepository.findByAccNumberAndLock(first)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + first));
-        Account secondAccount = repository.findByAccNumberAndLock(second)
+        Account secondAccount = accRepository.findByAccNumberAndLock(second)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + second));
         decreaseAmount(firstAccount.getAccNumber().equals(from) ? firstAccount : secondAccount, amount);
         increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
 
-        log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
-        return repository.saveAll(List.of(firstAccount, secondAccount));
+        AccountService.log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
+        logRepository.save(Log.builder().fromNumber(from).toNumber(to).amount(amount).description("transfer").date(Instant.now()).build());
+        return accRepository.saveAll(List.of(firstAccount, secondAccount));
     }
 
     private static void increaseAmount(Account account, BigDecimal amount) {

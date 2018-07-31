@@ -1,5 +1,6 @@
 package ru.shishmakov.controller;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -76,13 +77,18 @@ public class AccountService {
         return accRepository.saveAll(List.of(firstAccount, secondAccount));
     }
 
-    private static void increaseAmount(Account account, BigDecimal amount) {
+    private void increaseAmount(Account account, BigDecimal amount) {
         account.setAmount(account.getAmount().add(amount));
-        account.setLastUpdate(Instant.now());
+        updateDate(account);
     }
 
-    private static void decreaseAmount(Account account, BigDecimal amount) {
+    private void decreaseAmount(Account account, BigDecimal amount) {
         account.setAmount(account.getAmount().subtract(amount));
+        updateDate(account);
+    }
+
+    @VisibleForTesting
+    void updateDate(Account account) {
         account.setLastUpdate(Instant.now());
     }
 

@@ -160,7 +160,8 @@ public class ApiControllerTest {
         Transfer transfer = Transfer.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(from)).when(accountRepository).findByAccNumberAndLock(eq(from.getAccNumber()));
         doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(eq(to.getAccNumber()));
-        doReturn(List.of(from, to)).when(accountRepository).saveAll(anyList());
+        doAnswer(in -> in.getArguments()[0]).when(accountRepository).saveAll(anyList());
+        doNothing().when(accountService).updateDate(any(Account.class));
 
         MockHttpServletResponse response = mockMvc
                 .perform(put("/api/accounts/transfer")
@@ -170,7 +171,10 @@ public class ApiControllerTest {
 
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
-        assertThat(response.getContentAsString()).isEqualTo(json.write(List.of(from, to)).getJson());
+        assertThat(response.getContentAsString()).isEqualTo(json.write(List.of(
+                Account.builder().accNumber(100L).amount(new BigDecimal("0.0")).lastUpdate(ct).build(),
+                Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).lastUpdate(ct).build()
+        )).getJson());
 
         verify(accountService).transfer(anyLong(), anyLong(), any(BigDecimal.class));
         verify(accountRepository, times(2)).findByAccNumberAndLock(anyLong());
@@ -184,7 +188,7 @@ public class ApiControllerTest {
 
         MockHttpServletResponse response = mockMvc
                 .perform(put("/api/accounts/transfer")
-                        .contentType(APPLICATION_JSON) // ?
+                        .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
                 .andReturn().getResponse();
 
@@ -201,7 +205,7 @@ public class ApiControllerTest {
 
         MockHttpServletResponse response = mockMvc
                 .perform(put("/api/accounts/transfer")
-                        .contentType(APPLICATION_JSON) // ?
+                        .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
                 .andReturn().getResponse();
 

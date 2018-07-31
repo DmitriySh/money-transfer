@@ -7,11 +7,7 @@ This is a prototype of bank transfer of funds between accounts. That project use
  - make a deposit to the account,
  - make a withdrawal from the account
  - the negative account balance is not allowed
- 
-Acces to database web console:
- - http://localhost:8080/h2-console
- - jdbc url `jdbc:h2:mem:testdb`
- - user name `sa`
+
 
 ## Requirements:
   * Java SE Development Kit 9
@@ -86,6 +82,10 @@ $ ./build/libs/money-transfer-all.jar
 09:13:40.459 [main] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
 09:13:40.465 [main] INFO  r.s.Main - Started Main in 5.116 seconds (JVM running for 5.834)
 ```
+ * acces to database web console:
+   * http://localhost:8080/h2-console
+   * jdbc url `jdbc:h2:mem:testdb`
+   * user name `sa`
 
 ## Stop
  * need interruption by the user, such as typing `^C` (Ctrl + C)

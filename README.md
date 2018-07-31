@@ -25,28 +25,28 @@ This is a prototype of bank transfer of funds between accounts. That project use
  ```
  * get one account by his number
 ```
-curl -X GET localhost:8080/api/account/1001
+~$ curl -X GET localhost:8080/api/account/1001
 {"accNumber":1001,"amount":1000.00,"lastUpdate":"2018-07-31T05:10:34.174Z"}
 ```
  * add money to concrete account by his number
 ```
-curl -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
+~$ curl -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
 {"accNumber":1001,"amount":1199.56,"lastUpdate":"2018-07-31T05:22:12.194734Z"}
 ```
  * get money from the concrete account by his number
 ```
-curl -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
+~$ curl -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
 {"accNumber":1001,"amount":1100.00,"lastUpdate":"2018-07-31T05:27:30.858940Z"}
 ```
  * transfer money from one account to another by their numbers
 ```
-curl -H "Content-Type: application/json" -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
+~$ curl -H "Content-Type: application/json" -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
 [{"accNumber":1001,"amount":1200.51,"lastUpdate":"2018-07-31T05:30:12.359314Z"},
 {"accNumber":1002,"amount":1899.49,"lastUpdate":"2018-07-31T05:30:12.359310Z"}]%
 ```
  * get all log records
 ```
-curl -X GET localhost:8080/api/logs
+~$ curl -X GET localhost:8080/api/logs
 [{"toNumber":1001,"amount":199.56,"description":"deposit","date":"2018-07-31T05:48:43.638714Z"},
 {"fromNumber":1001,"amount":99.56,"description":"withdraw","date":"2018-07-31T05:48:52.804752Z"},
 {"fromNumber":1002,"toNumber":1001,"amount":100.51,"description":"transfer","date":"2018-07-31T05:48:58.045694Z"}]
@@ -56,7 +56,7 @@ curl -X GET localhost:8080/api/logs
 ## Run:
  * build app
 ```bash
-$ ./gradlew clean build
+~$ ./gradlew clean build
 
 BUILD SUCCESSFUL in 2s
 4 actionable tasks: 4 executed
@@ -64,7 +64,7 @@ BUILD SUCCESSFUL in 2s
 
  * start app
 ```bash
-$ ./build/libs/money-transfer-all.jar
+~$ ./build/libs/money-transfer-all.jar
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -92,10 +92,11 @@ $ ./build/libs/money-transfer-all.jar
  * need interruption by the user, such as typing `^C` (Ctrl + C)
  * kill the process `kill <PID>`
  ```bash
- 09:17:11.215 [Thread-2] INFO  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Closing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@5609159b: startup date [Tue Jul 31 09:13:36 MSK 2018]; root of context hierarchy
+...
+09:17:11.215 [Thread-2] INFO  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Closing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@5609159b: startup date [Tue Jul 31 09:13:36 MSK 2018]; root of context hierarchy
 09:17:11.218 [Thread-2] INFO  o.s.j.e.a.AnnotationMBeanExporter - Unregistering JMX-exposed beans on shutdown
 09:17:11.219 [Thread-2] INFO  o.s.j.e.a.AnnotationMBeanExporter - Unregistering JMX-exposed beans
 09:17:11.220 [Thread-2] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 09:17:11.222 [Thread-2] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown initiated...
 09:17:11.225 [Thread-2] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown completed.
- ```
+```

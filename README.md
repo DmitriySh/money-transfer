@@ -41,7 +41,8 @@ curl -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withd
  * transfer money from one account to another by their numbers
 ```
 curl -H "Content-Type: application/json" -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
-[{"accNumber":1001,"amount":1200.51,"lastUpdate":"2018-07-31T05:30:12.359314Z"},{"accNumber":1002,"amount":1899.49,"lastUpdate":"2018-07-31T05:30:12.359310Z"}]%
+[{"accNumber":1001,"amount":1200.51,"lastUpdate":"2018-07-31T05:30:12.359314Z"},
+{"accNumber":1002,"amount":1899.49,"lastUpdate":"2018-07-31T05:30:12.359310Z"}]%
 ```
  * get all log records
 ```

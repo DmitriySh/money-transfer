@@ -26,12 +26,16 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -57,6 +61,7 @@ public class ApiControllerTest {
 
     private JacksonTester<List<Log>> jsonLogs;
     private JacksonTester<List<Account>> jsonAccounts;
+    private JacksonTester<Account> jsonAccount;
 
     @Before
     public void setUp() {
@@ -87,13 +92,13 @@ public class ApiControllerTest {
         );
         doReturn(data).when(logRepository).findAll();
 
-        MockHttpServletResponse response = mockMvc
-                .perform(get("/api/logs"))
-                .andReturn().getResponse();
+        MockHttpServletResponse response = mockMvc.perform(get("/api/logs")).andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(jsonLogs.write(data).getJson());
+        verify(accountService).getLogRecords();
+        verify(logRepository).findAll();
     }
 
     @Test
@@ -105,11 +110,39 @@ public class ApiControllerTest {
         );
         doReturn(data).when(accountRepository).findAll();
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/accounts").accept(APPLICATION_JSON))
-                .andReturn().getResponse();
+        MockHttpServletResponse response = mockMvc.perform(get("/api/accounts")).andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(jsonAccounts.write(data).getJson());
+        verify(accountService).getAccounts();
+        verify(accountRepository).findAll();
+    }
+
+    @Test
+    public void apiGetAccountShouldReturnAccountIfAvailable() throws Exception {
+        Account account = Account.builder().accNumber(1L).amount(new BigDecimal("1.0")).lastUpdate(Instant.now()).build();
+        doReturn(Optional.of(account)).when(accountRepository).findByAccNumber(anyLong());
+
+        MockHttpServletResponse response = mockMvc.perform(get("/api/account/1")).andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(OK.value());
+        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
+        assertThat(response.getContentAsString()).isEqualTo(jsonAccount.write(account).getJson());
+        verify(accountService).getAccount(eq(1L));
+        verify(accountRepository).findByAccNumber(eq(1L));
+    }
+
+    @Test
+    public void apiGetAccountShouldNotReturnAccountIfNotAvailable() throws Exception {
+        doReturn(Optional.empty()).when(accountRepository).findByAccNumber(anyLong());
+
+        MockHttpServletResponse response = mockMvc.perform(get("/api/account/1")).andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(NOT_FOUND.value());
+        assertThat(response.getContentType()).isNull();
+        assertThat(response.getContentAsString()).isBlank();
+        verify(accountService).getAccount(eq(1L));
+        verify(accountRepository).findByAccNumber(eq(1L));
     }
 }

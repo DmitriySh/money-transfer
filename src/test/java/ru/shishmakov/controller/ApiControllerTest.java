@@ -51,8 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(ApiController.class)
-//@SpringBootTest
-//@AutoConfigureMockMvc
 public class ApiControllerTest {
 
     private static final Instant ct = Instant.now();

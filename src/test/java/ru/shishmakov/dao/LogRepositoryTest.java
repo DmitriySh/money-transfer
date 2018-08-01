@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -36,7 +37,8 @@ public class LogRepositoryTest {
         assertThat(saved)
                 .isNotNull()
                 .isNotEqualTo(blankLog)
-                .hasNoNullFieldsOrProperties();
+                .matches(a -> nonNull(a.getId()))
+                .matches(a -> nonNull(a.getDate()));
     }
 
     @Test

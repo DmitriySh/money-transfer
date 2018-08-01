@@ -165,7 +165,7 @@ public class ApiControllerTest {
 
         MockHttpServletResponse response = mockMvc
                 .perform(put("/api/accounts/transfer")
-                        .contentType(APPLICATION_JSON) // ?
+                        .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
                 .andReturn().getResponse();
 

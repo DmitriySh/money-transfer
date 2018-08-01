@@ -1,6 +1,8 @@
 package ru.shishmakov.dao;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,6 +24,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class LogRepositoryTest {
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().muteForSuccessfulTests();
     @Autowired
     private LogRepository logRepository;
 

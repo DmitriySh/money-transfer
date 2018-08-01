@@ -3,6 +3,8 @@ package ru.shishmakov.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -38,6 +40,7 @@ public class Log {
 
     private String description;
 
+    @Generated(GenerationTime.INSERT)
     @Basic
     private Instant date;
 }

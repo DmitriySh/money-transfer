@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -79,11 +78,12 @@ public class AccountRepositoryTest {
 
         assertThat(blankAccount)
                 .isNotNull()
-                .matches(a -> isNull(a.getId()));
+                .matches(a -> isNull(a.getId()))
+                .matches(a -> isNull(a.getLastUpdate()));
         assertThat(saved)
                 .isNotNull()
                 .isNotEqualTo(blankAccount)
-                .matches(a -> nonNull(a.getId()));
+                .hasNoNullFieldsOrProperties();
     }
 
     @Test

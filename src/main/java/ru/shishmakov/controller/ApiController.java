@@ -20,7 +20,7 @@ import static org.springframework.http.HttpStatus.*;
 public class ApiController {
     private final AccountService service;
 
-    @GetMapping()
+    @GetMapping
     public String hello() {
         return "RESTfull API for money transfer";
     }

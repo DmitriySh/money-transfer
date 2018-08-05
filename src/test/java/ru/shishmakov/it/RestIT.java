@@ -35,7 +35,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 /**
- * Integration test checks atomicity of transfers between different accounts
+ * Integration test checks atomicity of transfer/deposit/withdraw operations between different accounts.<br/>
+ * Account states should be the same at the beginning and at the end of methods
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -63,9 +64,36 @@ public class RestIT {
         executor.awaitTermination(1, MINUTES);
     }
 
-    /**
-     * Account states should be the same at the beginning and at the end of test
-     */
+    @Test
+    public void putDepositAndWithdrawShouldPerformAtomicActions() throws Exception {
+        // before
+        checkStateAccounts();
+
+        // make transfers
+        executor.invokeAll(List.of(() -> {
+            performDepositAndWithdraw(1001L, 1002L, new BigDecimal("11.03"));// 1001L -> 1002L
+            return null;
+        }, () -> {
+            performDepositAndWithdraw(1002L, 1001L, new BigDecimal("11.03"));// 1002L -> 1001L
+            return null;
+        }, () -> {
+            performDepositAndWithdraw(1001L, 1003L, new BigDecimal("11.03"));// 1001L -> 1003L
+            return null;
+        }, () -> {
+            performDepositAndWithdraw(1003L, 1001L, new BigDecimal("11.03"));// 1003L -> 1001L
+            return null;
+        }, () -> {
+            performDepositAndWithdraw(1002L, 1003L, new BigDecimal("11.03"));// 1002L -> 1003L
+            return null;
+        }, (Callable<Void>) () -> {
+            performDepositAndWithdraw(1003L, 1002L, new BigDecimal("11.03"));// 1003L -> 1002L
+            return null;
+        }));
+
+        // after
+        checkStateAccounts();
+    }
+
     @Test
     public void putTransferShouldPerformAtomicActions() throws Exception {
         // before
@@ -73,22 +101,22 @@ public class RestIT {
 
         // make transfers
         executor.invokeAll(List.of(() -> {
-            performAction(1001L, 1002L, new BigDecimal("10.0"));// 1001L -> 1002L
+            performTransfer(1001L, 1002L, new BigDecimal("10.33"));// 1001L -> 1002L
             return null;
         }, () -> {
-            performAction(1002L, 1001L, new BigDecimal("10.0"));// 1002L -> 1001L
+            performTransfer(1002L, 1001L, new BigDecimal("10.33"));// 1002L -> 1001L
             return null;
         }, () -> {
-            performAction(1001L, 1003L, new BigDecimal("10.0"));// 1001L -> 1003L
+            performTransfer(1001L, 1003L, new BigDecimal("10.33"));// 1001L -> 1003L
             return null;
         }, () -> {
-            performAction(1003L, 1001L, new BigDecimal("10.0"));// 1003L -> 1001L
+            performTransfer(1003L, 1001L, new BigDecimal("10.33"));// 1003L -> 1001L
             return null;
         }, () -> {
-            performAction(1002L, 1003L, new BigDecimal("10.0"));// 1002L -> 1003L
+            performTransfer(1002L, 1003L, new BigDecimal("10.33"));// 1002L -> 1003L
             return null;
         }, (Callable<Void>) () -> {
-            performAction(1003L, 1002L, new BigDecimal("10.0"));// 1003L -> 1002L
+            performTransfer(1003L, 1002L, new BigDecimal("10.33"));// 1003L -> 1002L
             return null;
         }));
 
@@ -109,7 +137,7 @@ public class RestIT {
         });
     }
 
-    private void performAction(long from, long to, BigDecimal amount) {
+    private void performTransfer(long from, long to, BigDecimal amount) {
         try {
             String json = mapper.writer().writeValueAsString(Transfer.builder().from(from).to(to).amount(amount).build());
             for (int i = 0; i < 50; i++) {
@@ -117,7 +145,22 @@ public class RestIT {
                         .andReturn().getResponse();
             }
         } catch (Exception e) {
-            logger.error("error", e);
+            logger.error("transfer error", e);
+        }
+    }
+
+    private void performDepositAndWithdraw(long withdrawAcc, long depositAcc, BigDecimal amount) {
+        try {
+            String depositJson = mapper.writer().writeValueAsString(Transfer.builder().to(depositAcc).amount(amount).build());
+            String withdrawJson = mapper.writer().writeValueAsString(Transfer.builder().from(withdrawAcc).amount(amount).build());
+            for (int i = 0; i < 50; i++) {
+                mockMvc.perform(put("/api/account/deposit").contentType(APPLICATION_JSON).content(depositJson))
+                        .andReturn().getResponse();
+                mockMvc.perform(put("/api/account/withdraw").contentType(APPLICATION_JSON).content(withdrawJson))
+                        .andReturn().getResponse();
+            }
+        } catch (Exception e) {
+            logger.error("deposit/withdraw error", e);
         }
     }
 }

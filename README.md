@@ -72,7 +72,7 @@ BUILD SUCCESSFUL in 2s
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::        (v2.0.3.RELEASE)
+ :: Spring Boot ::        (v2.0.4.RELEASE)
 
 09:13:35.941 [main] INFO  r.s.Main - Starting Main on shishmakov.local with PID 61139 (/Users/dima/programming/git/money-transfer/build/libs/money-transfer-all.jar started by dima in /Users/dima/programming/git/money-transfer/build/libs)
 09:13:35.944 [main] DEBUG r.s.Main - Running with Spring Boot v2.0.3.RELEASE, Spring v5.0.7.RELEASE

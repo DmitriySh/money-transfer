@@ -36,7 +36,7 @@ public class AccountRepositoryTest {
         assertThat(accounts)
                 .isNotNull()
                 .asList().isNotEmpty()
-                .size().isEqualTo(3);
+                .hasSize(3);
     }
 
     @Test

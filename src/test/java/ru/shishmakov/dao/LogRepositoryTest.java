@@ -61,6 +61,6 @@ public class LogRepositoryTest {
         assertThat(logs)
                 .isNotNull()
                 .asList().isNotEmpty()
-                .size().isEqualTo(2);
+                .hasSize(2);
     }
 }

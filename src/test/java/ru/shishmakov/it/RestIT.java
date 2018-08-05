@@ -9,8 +9,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,12 +18,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.shishmakov.model.Account;
 import ru.shishmakov.model.Transfer;
 
-import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.LongAdder;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -42,8 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @AutoConfigureMockMvc
 public class RestIT {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private static ExecutorService executor;
     private static ObjectMapper mapper;
 
@@ -68,60 +64,65 @@ public class RestIT {
     public void putDepositAndWithdrawShouldPerformAtomicActions() throws Exception {
         // before
         checkStateAccounts();
+        LongAdder count = new LongAdder();
 
         // make transfers
         executor.invokeAll(List.of(() -> {
-            performDepositAndWithdraw(1001L, 1002L, new BigDecimal("11.03"));// 1001L -> 1002L
+            performDepositAndWithdraw(1001L, 1002L, new BigDecimal("11.03"), count);// 1001L -> 1002L
             return null;
         }, () -> {
-            performDepositAndWithdraw(1002L, 1001L, new BigDecimal("11.03"));// 1002L -> 1001L
+            performDepositAndWithdraw(1002L, 1001L, new BigDecimal("11.03"), count);// 1002L -> 1001L
             return null;
         }, () -> {
-            performDepositAndWithdraw(1001L, 1003L, new BigDecimal("11.03"));// 1001L -> 1003L
+            performDepositAndWithdraw(1001L, 1003L, new BigDecimal("11.03"), count);// 1001L -> 1003L
             return null;
         }, () -> {
-            performDepositAndWithdraw(1003L, 1001L, new BigDecimal("11.03"));// 1003L -> 1001L
+            performDepositAndWithdraw(1003L, 1001L, new BigDecimal("11.03"), count);// 1003L -> 1001L
             return null;
         }, () -> {
-            performDepositAndWithdraw(1002L, 1003L, new BigDecimal("11.03"));// 1002L -> 1003L
+            performDepositAndWithdraw(1002L, 1003L, new BigDecimal("11.03"), count);// 1002L -> 1003L
             return null;
         }, (Callable<Void>) () -> {
-            performDepositAndWithdraw(1003L, 1002L, new BigDecimal("11.03"));// 1003L -> 1002L
+            performDepositAndWithdraw(1003L, 1002L, new BigDecimal("11.03"), count);// 1003L -> 1002L
             return null;
         }));
 
         // after
         checkStateAccounts();
+        assertThat(count.sum()).isEqualTo(6);
     }
 
     @Test
     public void putTransferShouldPerformAtomicActions() throws Exception {
+        LongAdder success = new LongAdder();
+
         // before
         checkStateAccounts();
 
         // make transfers
         executor.invokeAll(List.of(() -> {
-            performTransfer(1001L, 1002L, new BigDecimal("10.33"));// 1001L -> 1002L
+            performTransfer(1001L, 1002L, new BigDecimal("10.33"), success);// 1001L -> 1002L
             return null;
         }, () -> {
-            performTransfer(1002L, 1001L, new BigDecimal("10.33"));// 1002L -> 1001L
+            performTransfer(1002L, 1001L, new BigDecimal("10.33"), success);// 1002L -> 1001L
             return null;
         }, () -> {
-            performTransfer(1001L, 1003L, new BigDecimal("10.33"));// 1001L -> 1003L
+            performTransfer(1001L, 1003L, new BigDecimal("10.33"), success);// 1001L -> 1003L
             return null;
         }, () -> {
-            performTransfer(1003L, 1001L, new BigDecimal("10.33"));// 1003L -> 1001L
+            performTransfer(1003L, 1001L, new BigDecimal("10.33"), success);// 1003L -> 1001L
             return null;
         }, () -> {
-            performTransfer(1002L, 1003L, new BigDecimal("10.33"));// 1002L -> 1003L
+            performTransfer(1002L, 1003L, new BigDecimal("10.33"), success);// 1002L -> 1003L
             return null;
         }, (Callable<Void>) () -> {
-            performTransfer(1003L, 1002L, new BigDecimal("10.33"));// 1003L -> 1002L
+            performTransfer(1003L, 1002L, new BigDecimal("10.33"), success);// 1003L -> 1002L
             return null;
         }));
 
         // after
         checkStateAccounts();
+        assertThat(success.sum()).isEqualTo(6);
     }
 
     private void checkStateAccounts() throws Exception {
@@ -137,30 +138,24 @@ public class RestIT {
         });
     }
 
-    private void performTransfer(long from, long to, BigDecimal amount) {
-        try {
-            String json = mapper.writer().writeValueAsString(Transfer.builder().from(from).to(to).amount(amount).build());
-            for (int i = 0; i < 50; i++) {
-                mockMvc.perform(put("/api/accounts/transfer").contentType(APPLICATION_JSON).content(json))
-                        .andReturn().getResponse();
-            }
-        } catch (Exception e) {
-            logger.error("transfer error", e);
+    private void performTransfer(long from, long to, BigDecimal amount, LongAdder count) throws Exception {
+        String json = mapper.writer().writeValueAsString(Transfer.builder().from(from).to(to).amount(amount).build());
+        for (int i = 0; i < 50; i++) {
+            mockMvc.perform(put("/api/accounts/transfer").contentType(APPLICATION_JSON).content(json))
+                    .andReturn().getResponse();
         }
+        count.increment();
     }
 
-    private void performDepositAndWithdraw(long withdrawAcc, long depositAcc, BigDecimal amount) {
-        try {
-            String depositJson = mapper.writer().writeValueAsString(Transfer.builder().to(depositAcc).amount(amount).build());
-            String withdrawJson = mapper.writer().writeValueAsString(Transfer.builder().from(withdrawAcc).amount(amount).build());
-            for (int i = 0; i < 50; i++) {
-                mockMvc.perform(put("/api/account/deposit").contentType(APPLICATION_JSON).content(depositJson))
-                        .andReturn().getResponse();
-                mockMvc.perform(put("/api/account/withdraw").contentType(APPLICATION_JSON).content(withdrawJson))
-                        .andReturn().getResponse();
-            }
-        } catch (Exception e) {
-            logger.error("deposit/withdraw error", e);
+    private void performDepositAndWithdraw(long withdrawAcc, long depositAcc, BigDecimal amount, LongAdder count) throws Exception {
+        String depositJson = mapper.writer().writeValueAsString(Transfer.builder().to(depositAcc).amount(amount).build());
+        String withdrawJson = mapper.writer().writeValueAsString(Transfer.builder().from(withdrawAcc).amount(amount).build());
+        for (int i = 0; i < 50; i++) {
+            mockMvc.perform(put("/api/account/deposit").contentType(APPLICATION_JSON).content(depositJson))
+                    .andReturn().getResponse();
+            mockMvc.perform(put("/api/account/withdraw").contentType(APPLICATION_JSON).content(withdrawJson))
+                    .andReturn().getResponse();
         }
+        count.increment();
     }
 }

@@ -37,12 +37,12 @@ public class LogRepositoryTest {
         assertThat(blankLog)
                 .isNotNull()
                 .matches(a -> isNull(a.getId()))
-                .matches(a -> isNull(a.getDate()));
+                .matches(a -> isNull(a.getCreateDate()));
         assertThat(saved)
                 .isNotNull()
                 .isNotEqualTo(blankLog)
                 .matches(a -> nonNull(a.getId()))
-                .matches(a -> nonNull(a.getDate()));
+                .matches(a -> nonNull(a.getCreateDate()));
     }
 
     @Test

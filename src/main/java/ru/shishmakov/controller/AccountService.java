@@ -44,7 +44,7 @@ public class AccountService {
         decreaseAmount(account, amount);
 
         log.debug("withdraw account: {}, amount: {}", number, amount);
-        logRepository.save(Log.builder().fromNumber(number).amount(amount).description("withdraw").date(Instant.now()).build());
+        logRepository.save(Log.builder().fromNumber(number).amount(amount).description("withdraw").createDate(Instant.now()).build());
         return accRepository.save(account);
     }
 
@@ -55,7 +55,7 @@ public class AccountService {
         increaseAmount(account, amount);
 
         log.debug("deposit account: {}, amount: {}", number, amount);
-        logRepository.save(Log.builder().toNumber(number).amount(amount).description("deposit").date(Instant.now()).build());
+        logRepository.save(Log.builder().toNumber(number).amount(amount).description("deposit").createDate(Instant.now()).build());
         return accRepository.save(account);
     }
 
@@ -73,7 +73,7 @@ public class AccountService {
         increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
 
         AccountService.log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
-        logRepository.save(Log.builder().fromNumber(from).toNumber(to).amount(amount).description("transfer").date(Instant.now()).build());
+        logRepository.save(Log.builder().fromNumber(from).toNumber(to).amount(amount).description("transfer").createDate(Instant.now()).build());
         return accRepository.saveAll(List.of(firstAccount, secondAccount));
     }
 

@@ -2,7 +2,11 @@ package ru.shishmakov.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
@@ -42,5 +46,5 @@ public class Log {
 
     @Generated(GenerationTime.INSERT)
     @Basic
-    private Instant date;
+    private Instant createDate;
 }

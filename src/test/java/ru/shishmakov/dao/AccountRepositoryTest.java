@@ -86,7 +86,6 @@ public class AccountRepositoryTest {
                 .matches(a -> isNull(a.getLastUpdate()));
         assertThat(saved)
                 .isNotNull()
-                .isNotEqualTo(blankAccount)
                 .hasNoNullFieldsOrProperties();
     }
 

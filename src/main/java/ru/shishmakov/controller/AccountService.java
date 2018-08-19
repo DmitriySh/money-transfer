@@ -9,6 +9,8 @@ import ru.shishmakov.dao.AccountRepository;
 import ru.shishmakov.dao.LogRepository;
 import ru.shishmakov.model.Account;
 import ru.shishmakov.model.Log;
+import ru.shishmakov.web.ArgumentException;
+import ru.shishmakov.web.NotFoundException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,42 +35,47 @@ public class AccountService {
     }
 
     public Optional<Account> getAccount(long accNumber) {
+        checkNumber(accNumber, "accNumber");
         log.debug("get account: {}", accNumber);
         return accRepository.findByAccNumber(accNumber);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Account withdraw(long number, BigDecimal amount) {
+    public Account withdraw(Long from, BigDecimal amount) {
+        checkNumber(from, "from");
         checkAmount(amount);
-        Account account = accRepository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        Account account = accRepository.findByAccNumberAndLock(from).orElseThrow(() -> new NotFoundException("withdraw; not found id: " + from));
         decreaseAmount(account, amount);
 
-        log.debug("withdraw account: {}, amount: {}", number, amount);
-        logRepository.save(Log.builder().fromNumber(number).amount(amount).description("withdraw").createDate(Instant.now()).build());
+        log.debug("withdraw account: {}, amount: {}", from, amount);
+        logRepository.save(Log.builder().fromNumber(from).amount(amount).description("withdraw").createDate(Instant.now()).build());
         return accRepository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Account deposit(long number, BigDecimal amount) {
+    public Account deposit(Long to, BigDecimal amount) {
+        checkNumber(to, "to");
         checkAmount(amount);
-        Account account = accRepository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        Account account = accRepository.findByAccNumberAndLock(to).orElseThrow(() -> new NotFoundException("deposit; not found id: " + to));
         increaseAmount(account, amount);
 
-        log.debug("deposit account: {}, amount: {}", number, amount);
-        logRepository.save(Log.builder().toNumber(number).amount(amount).description("deposit").createDate(Instant.now()).build());
+        log.debug("deposit account: {}, amount: {}", to, amount);
+        logRepository.save(Log.builder().toNumber(to).amount(amount).description("deposit").createDate(Instant.now()).build());
         return accRepository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public List<Account> transfer(long from, long to, BigDecimal amount) {
+    public List<Account> transfer(Long from, Long to, BigDecimal amount) {
+        checkNumber(from, "from");
+        checkNumber(to, "to");
         checkAmount(amount);
         long first = from < to ? from : to;
         long second = from < to ? to : from;
 
         Account firstAccount = accRepository.findByAccNumberAndLock(first)
-                .orElseThrow(() -> new IllegalArgumentException("not found id: " + first));
+                .orElseThrow(() -> new NotFoundException("transfer; not found id: " + first));
         Account secondAccount = accRepository.findByAccNumberAndLock(second)
-                .orElseThrow(() -> new IllegalArgumentException("not found id: " + second));
+                .orElseThrow(() -> new NotFoundException("transfer; not found id: " + second));
         decreaseAmount(firstAccount.getAccNumber().equals(from) ? firstAccount : secondAccount, amount);
         increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
 
@@ -93,6 +100,12 @@ public class AccountService {
     }
 
     private static void checkAmount(BigDecimal amount) {
-        if (BigDecimal.ZERO.compareTo(amount) > 0) throw new IllegalArgumentException("not positive amount: " + amount);
+        if (BigDecimal.ZERO.compareTo(amount) > 0) throw new ArgumentException("not positive amount: " + amount);
+    }
+
+    private void checkNumber(Long number, String desc) {
+        Optional.ofNullable(number)
+                .filter(n -> n > 0)
+                .orElseThrow(() -> new ArgumentException("not positive " + desc + ": " + number));
     }
 }

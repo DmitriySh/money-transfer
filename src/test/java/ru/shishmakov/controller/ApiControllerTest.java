@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,18 +33,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.anyIterable;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -198,7 +192,7 @@ public class ApiControllerTest {
                 .contentType(APPLICATION_JSON)
                 .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(isEmptyOrNullString()));
+                .andExpect(content().string(containsString("not positive amount")));
 
         verify(accountService).transfer(anyLong(), anyLong(), any(BigDecimal.class));
         verify(accountRepository, never()).findByAccNumberAndLock(anyLong());
@@ -207,13 +201,13 @@ public class ApiControllerTest {
 
     @Test
     public void putTransferShouldNotPerformIfTransferObjectNotValid() throws Exception {
-        Transfer transfer = Transfer.builder().amount(new BigDecimal("-1.0")).build();
+        Transfer transfer = Transfer.builder().from(null).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/accounts/transfer")
                 .contentType(APPLICATION_JSON)
                 .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(isEmptyOrNullString()));
+                .andExpect(content().string(containsString("not positive from")));
 
         verify(accountService, never()).transfer(anyLong(), anyLong(), any(BigDecimal.class));
     }
@@ -252,7 +246,7 @@ public class ApiControllerTest {
                 .contentType(APPLICATION_JSON)
                 .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(isEmptyOrNullString()));
+                .andExpect(content().string(containsString("not positive amount")));
 
         verify(accountService).deposit(anyLong(), any(BigDecimal.class));
         verify(accountRepository, never()).findByAccNumberAndLock(anyLong());
@@ -261,13 +255,13 @@ public class ApiControllerTest {
 
     @Test
     public void putDepositShouldNotPerformIfTransferObjectNotValid() throws Exception {
-        Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
+        Transfer transfer = Transfer.builder().to(null).amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
                 .contentType(APPLICATION_JSON)
                 .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(isEmptyOrNullString()));
+                .andExpect(content().string(containsString("not positive to")));
 
         verify(accountService, never()).deposit(anyLong(), any(BigDecimal.class));
     }
@@ -306,7 +300,7 @@ public class ApiControllerTest {
                 .contentType(APPLICATION_JSON)
                 .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(isEmptyOrNullString()));
+                .andExpect(content().string(containsString("not positive amount")));
 
         verify(accountService).withdraw(anyLong(), any(BigDecimal.class));
         verify(accountRepository, never()).findByAccNumberAndLock(anyLong());
@@ -315,13 +309,13 @@ public class ApiControllerTest {
 
     @Test
     public void putWithdrawShouldNotPerformIfTransferObjectNotValid() throws Exception {
-        Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
+        Transfer transfer = Transfer.builder().from(null).amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/withdraw")
                 .contentType(APPLICATION_JSON)
                 .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(isEmptyOrNullString()));
+                .andExpect(content().string(Matchers.containsString("not positive from")));
 
         verify(accountService, never()).withdraw(anyLong(), any(BigDecimal.class));
     }

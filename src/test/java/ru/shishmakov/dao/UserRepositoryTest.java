@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.shishmakov.model.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Objects.isNull;
@@ -48,5 +49,14 @@ public class UserRepositoryTest {
                 .isNotNull()
                 .asList().isNotEmpty()
                 .hasSize(2);
+    }
+
+    @Test
+    public void findByUsernameShouldReturnUser() {
+        Optional<User> admin = userRepository.findByUsername("admin");
+
+        assertThat(admin)
+                .isNotNull()
+                .isPresent();
     }
 }

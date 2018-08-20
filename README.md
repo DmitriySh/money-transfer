@@ -103,3 +103,99 @@ BUILD SUCCESSFUL in 2s
 09:17:11.222 [Thread-2] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown initiated...
 09:17:11.225 [Thread-2] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
+
+================= NEW Doc
+
+- create token for 'User' by login/password (don't need JWT Authorization)
+```
+curl -X POST localhost:8080/auth/signin -H "Content-Type:application/json" -d "{\"username\":\"user\", \"password\":\"password\"}"
+
+{"token":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDc1MzY2NCwiZXhwIjoxNTM0NzU3MjY0fQ.zsRkA-aP7pxSc6r8NhTqrCWaEnJUda_jeFTAMhB92ac","username":"user"}
+```
+
+- information about user by current token (need JWT Authorization)
+``` 
+curl -X GET localhost:8080/me -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDc1MzY2NCwiZXhwIjoxNTM0NzU3MjY0fQ.zsRkA-aP7pxSc6r8NhTqrCWaEnJUda_jeFTAMhB92ac"
+
+{"roles":["ROLE_USER"],"username":"user"}
+```
+
+
+- get description of root path '/api' (don't need JWT Authorization)
+```
+curl -X GET localhost:8080/api
+
+RESTfull API for money transfer
+```
+
+
+- get logs (don't need JWT Authorization)
+```
+curl -X GET localhost:8080/api/logs
+
+[]
+```
+
+- get all accounts (don't need JWT Authorization)
+```
+curl -X GET localhost:8080/api/accounts
+
+[{"accNumber":1001,"amount":1000.00,"lastUpdate":"2018-08-20T08:37:22.766Z"},{"accNumber":1002,"amount":2000.00,"lastUpdate":"2018-08-20T08:37:22.766Z"},{"accNumber":1003,"amount":3000.00,"lastUpdate":"2018-08-20T08:37:22.766Z"}]
+```
+
+- make transfer by 'User' token = 403 Forbidden (need JWT Authorization)
+```
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDc1MzY2NCwiZXhwIjoxNTM0NzU3MjY0fQ.zsRkA-aP7pxSc6r8NhTqrCWaEnJUda_jeFTAMhB92ac" -H "Content-Type: application/json" -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
+
+{"timestamp":"2018-08-20T08:41:20.809+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/accounts/transfer"}
+```
+
+- make transfer by 'Admin' token = 200 OK (need JWT Authorization)
+```
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0NzU0NjE0LCJleHAiOjE1MzQ3NTgyMTR9.x9sVVMMudr4qBUwjrSg5f1FmRkrD3pzjAk1ZQjc1WoI" -H "Content-Type: application/json" -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
+
+[{"accNumber":1001,"amount":1100.51,"lastUpdate":"2018-08-20T08:45:04.938816Z"},{"accNumber":1002,"amount":1899.49,"lastUpdate":"2018-08-20T08:45:04.938771Z"}]
+```
+
+- make transfer without token = 403 Forbidden (need JWT Authorization)
+```
+curl -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
+
+{"timestamp":"2018-08-20T08:50:31.964+0000","status":403,"error":"Forbidden","message":"Access Denied","path":"/api/accounts/transfer"}
+```
+
+- make deposit by 'User' token = 403 Forbidden (need JWT Authorization)
+```
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDc1MzY2NCwiZXhwIjoxNTM0NzU3MjY0fQ.zsRkA-aP7pxSc6r8NhTqrCWaEnJUda_jeFTAMhB92ac" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
+
+{"timestamp":"2018-08-20T08:53:55.277+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/account/deposit"}
+```
+
+- make deposit by 'Admin' token = 200 OK (need JWT Authorization)
+```
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0NzU0NjE0LCJleHAiOjE1MzQ3NTgyMTR9.x9sVVMMudr4qBUwjrSg5f1FmRkrD3pzjAk1ZQjc1WoI" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
+
+{"accNumber":1001,"amount":1400.58,"lastUpdate":"2018-08-20T08:56:24.653419Z"}
+```
+
+- make withdraw by 'User' token = 403 Forbidden (need JWT Authorization)
+```
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDc1MzY2NCwiZXhwIjoxNTM0NzU3MjY0fQ.zsRkA-aP7pxSc6r8NhTqrCWaEnJUda_jeFTAMhB92ac" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
+
+{"timestamp":"2018-08-20T09:00:24.102+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/account/withdraw"}
+```
+
+
+- make withdraw by 'Admin' token = 200 OK (need JWT Authorization)
+```
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0NzU0NjE0LCJleHAiOjE1MzQ3NTgyMTR9.x9sVVMMudr4qBUwjrSg5f1FmRkrD3pzjAk1ZQjc1WoI" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
+
+{"accNumber":1001,"amount":1301.02,"lastUpdate":"2018-08-20T08:58:43.017475Z"}
+```
+
+- get account info by ID (don't need JWT Authorization)
+```
+curl -X GET localhost:8080/api/account/1001
+
+{"accNumber":1001,"amount":1000.00,"lastUpdate":"2018-08-20T09:13:51.571Z"}
+```

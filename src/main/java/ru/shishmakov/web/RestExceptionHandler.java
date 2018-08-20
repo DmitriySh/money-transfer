@@ -33,8 +33,8 @@ public class RestExceptionHandler {
         return ResponseEntity.status(UNAUTHORIZED).build();
     }
 
-    @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<?> notFoundException(Exception ex, WebRequest request) {
+    @ExceptionHandler(value = Throwable.class)
+    public ResponseEntity<?> notFoundException(Throwable ex, WebRequest request) {
         log.error("server error", ex);
         return new ResponseEntity<>(INTERNAL_SERVER_ERROR);
     }

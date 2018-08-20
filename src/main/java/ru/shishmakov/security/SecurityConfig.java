@@ -27,15 +27,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .httpBasic().disable()
                 .csrf().disable()
+//                .formLogin().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
                 .authorizeRequests()
                 .antMatchers("/auth/signin").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/logs").permitAll() // -don't need a token
-//                .antMatchers(HttpMethod.GET, "/api/accounts").permitAll()
-                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").hasRole("ADMIN")
-                .anyRequest().authenticated() // check /api/accounts -- need a token
+                .antMatchers(HttpMethod.GET, "/api").permitAll() // don't need a token
+                .antMatchers(HttpMethod.GET, "/api/logs").permitAll() // don't need a token
+                .antMatchers(HttpMethod.GET, "/api/accounts").permitAll() // don't need a token
+                .antMatchers(HttpMethod.GET, "/api/account/*").permitAll() // don't need a token
+                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").hasRole("ADMIN") // need token
+                .anyRequest().authenticated()
 
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider));

@@ -27,7 +27,7 @@ public class JwtTokenProvider {
 
     @Value("${security.jwt.token.secret-key:secret}")
     private String secretKey;
-    @Value("${security.jwt.token.expire-length:3600000}")
+    @Value("${security.jwt.token.expire-length:86400000}") // 1 day
     private long ttl;
 
     @PostConstruct
@@ -64,7 +64,7 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
-            throw new InvalidJwtAuthenticationException("expired or invalid JWT token");
+            throw new InvalidJwtAuthenticationException(e.getMessage(), e);
         }
     }
 

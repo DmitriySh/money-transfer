@@ -30,7 +30,7 @@ public class Main {
     @RequiredArgsConstructor
     @Component
     @Slf4j
-    static class DataInitializer implements CommandLineRunner {
+    static class DefaultDataInitializer implements CommandLineRunner {
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
 

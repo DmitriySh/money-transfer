@@ -2,6 +2,7 @@ package ru.shishmakov.web;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -26,7 +27,7 @@ public class RestExceptionHandler {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
-    @ExceptionHandler(value = InvalidJwtAuthenticationException.class)
+    @ExceptionHandler(value = {InvalidJwtAuthenticationException.class, BadCredentialsException.class})
     public ResponseEntity<?> invalidJwtAuthentication(InvalidJwtAuthenticationException ex, WebRequest request) {
         log.debug("error: " + ex.getMessage());
         return ResponseEntity.status(UNAUTHORIZED).build();

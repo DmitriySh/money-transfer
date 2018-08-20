@@ -33,12 +33,12 @@ public class AuthController {
             String username = data.getUsername();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("Username " + username + "not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException("Username '" + username + "' not found"));
             String token = jwtTokenProvider.createToken(username, List.copyOf(user.getRoles()));
 
             return ResponseEntity.ok(Map.of("username", username, "token", token));
         } catch (AuthenticationException e) {
-            throw new BadCredentialsException("invalid username/password supplied");
+            throw new BadCredentialsException("invalid username/password supplied; msg: " + e.getMessage());
         }
     }
 }

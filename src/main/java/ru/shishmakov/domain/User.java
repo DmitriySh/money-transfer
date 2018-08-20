@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,6 +32,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 /**
  * Special entity for security
  */
+@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

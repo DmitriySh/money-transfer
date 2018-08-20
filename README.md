@@ -8,9 +8,12 @@ This is a prototype of bank transfer of funds between accounts. That project use
  - make a withdrawal from the account
  - the negative account balance is not allowed
 
+**
+NB: https://github.com/hantsy/springboot-jwt-sample
+**
 
 ## Requirements:
-  * Java SE Development Kit 9
+  * Java SE Development Kit 10
   * Gradle 3.X (or you could use Gradle wrapper)
   * Git 1.7.x (or newer)
 

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shishmakov.dao.AccountRepository;
 import ru.shishmakov.dao.LogRepository;
-import ru.shishmakov.model.Account;
-import ru.shishmakov.model.Log;
+import ru.shishmakov.domain.Account;
+import ru.shishmakov.domain.Log;
 import ru.shishmakov.web.ArgumentException;
 import ru.shishmakov.web.NotFoundException;
 

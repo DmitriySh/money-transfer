@@ -1,4 +1,4 @@
-package ru.shishmakov.model;
+package ru.shishmakov.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

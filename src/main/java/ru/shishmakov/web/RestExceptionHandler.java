@@ -5,8 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import ru.shishmakov.security.InvalidJwtAuthenticationException;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RestControllerAdvice
 @Slf4j
@@ -22,6 +24,12 @@ public class RestExceptionHandler {
     public ResponseEntity<?> argumentException(ArgumentException ex, WebRequest request) {
         log.debug("error: " + ex.getMessage());
         return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(value = InvalidJwtAuthenticationException.class)
+    public ResponseEntity<?> invalidJwtAuthentication(InvalidJwtAuthenticationException ex, WebRequest request) {
+        log.debug("error: " + ex.getMessage());
+        return ResponseEntity.status(UNAUTHORIZED).build();
     }
 
     @ExceptionHandler(value = Exception.class)

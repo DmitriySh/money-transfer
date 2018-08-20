@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import ru.shishmakov.model.Account;
+import ru.shishmakov.domain.Account;
 
 import java.util.Optional;
 

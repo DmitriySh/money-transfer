@@ -1,4 +1,4 @@
-package ru.shishmakov.model;
+package ru.shishmakov.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;

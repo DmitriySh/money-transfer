@@ -3,10 +3,15 @@ package ru.shishmakov.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.shishmakov.model.Account;
-import ru.shishmakov.model.Log;
-import ru.shishmakov.model.Transfer;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.shishmakov.domain.Account;
+import ru.shishmakov.domain.Log;
+import ru.shishmakov.web.Transfer;
 
 import java.util.List;
 

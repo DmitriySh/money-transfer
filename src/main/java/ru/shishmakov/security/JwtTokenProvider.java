@@ -7,7 +7,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,7 +27,7 @@ public class JwtTokenProvider {
     private String secretKey;
     @Value("${security.jwt.token.expire-length:86400000}") // 1 day
     private long ttl;
-    private static final String X_AUTH_TOKEN = "x-auth-token";
+    private static final String X_AUTH_TOKEN_HEADER = "x-auth-token";
 
     @PostConstruct
     protected void init() {
@@ -51,7 +50,7 @@ public class JwtTokenProvider {
     }
 
     public String resolveToken(HttpServletRequest request) {
-        return request.getHeader(X_AUTH_TOKEN);
+        return request.getHeader(X_AUTH_TOKEN_HEADER);
     }
 
     public boolean validateToken(String token) {
@@ -72,8 +71,8 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
-        UserDetails userDetails = this.userLoadService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        UserDetails userDetails = userLoadService.loadUserByUsername(username);
+        return new AuthenticationObject(userDetails, "", userDetails.getAuthorities());
     }
 
 }

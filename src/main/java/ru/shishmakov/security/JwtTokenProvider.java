@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
@@ -29,6 +28,7 @@ public class JwtTokenProvider {
     private String secretKey;
     @Value("${security.jwt.token.expire-length:86400000}") // 1 day
     private long ttl;
+    private static final String X_AUTH_TOKEN = "x-auth-token";
 
     @PostConstruct
     protected void init() {
@@ -50,11 +50,8 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String resolveToken(HttpServletRequest req) {
-        return Optional.ofNullable(req.getHeader("Authorization"))
-                .filter(h -> h.startsWith("Bearer "))
-                .map(h -> h.substring(7))
-                .orElse(null);
+    public String resolveToken(HttpServletRequest request) {
+        return request.getHeader(X_AUTH_TOKEN);
     }
 
     public boolean validateToken(String token) {

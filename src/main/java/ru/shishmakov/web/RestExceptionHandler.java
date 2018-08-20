@@ -6,7 +6,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import ru.shishmakov.security.InvalidJwtAuthenticationException;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -27,8 +26,8 @@ public class RestExceptionHandler {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
-    @ExceptionHandler(value = {InvalidJwtAuthenticationException.class, BadCredentialsException.class})
-    public ResponseEntity<?> invalidJwtAuthentication(InvalidJwtAuthenticationException ex, WebRequest request) {
+    @ExceptionHandler(value = BadCredentialsException.class)
+    public ResponseEntity<?> invalidJwtAuthentication(BadCredentialsException ex, WebRequest request) {
         log.debug("error: " + ex.getMessage());
         return ResponseEntity.status(UNAUTHORIZED).build();
     }

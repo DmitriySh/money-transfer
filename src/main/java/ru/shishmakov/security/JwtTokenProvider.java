@@ -64,6 +64,7 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
+            // TODO: 20.08.2018 catch an exception to make a REST response 
             throw new InvalidJwtAuthenticationException(e.getMessage(), e);
         }
     }

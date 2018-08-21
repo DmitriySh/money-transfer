@@ -57,13 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .authorizeRequests()
-                .antMatchers("/auth/signin").hasRole("API")
-                .antMatchers("/me").permitAll()
+                .antMatchers(HttpMethod.PUT, "/auth/signin").hasRole("API")
+                .antMatchers("/auth/decode").permitAll()
                 .antMatchers(HttpMethod.GET, "/api").permitAll() // don't need a token
-                .antMatchers(HttpMethod.GET, "/api/logs").permitAll() // don't need a token
-                .antMatchers(HttpMethod.GET, "/api/accounts").permitAll() // don't need a token
-                .antMatchers(HttpMethod.GET, "/api/account/*").permitAll() // don't need a token
-//                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").hasRole("ADMIN") // need token
                 .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").hasRole("ADMIN") // need token
 //                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").access("hasRole('ROLE_API') or hasRole('ROLE_ADMIN')") // need token
                 .anyRequest().authenticated()

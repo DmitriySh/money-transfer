@@ -106,15 +106,23 @@ BUILD SUCCESSFUL in 2s
 
 ================= NEW Doc
 
+- get description of root path '/api' (don't need Basic/JWT Authorization)
+```
+curl -X GET localhost:8080/api
+
+RESTfull API for money transfer
+```
+
+
 - try create token without Basic auth (need Basic Authorization)
 ```
-curl -X POST localhost:8080/auth/signin -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "Content-Type:application/json" -d '{"username":"user", "password":"password"}'
+curl -X POST localhost:8080/auth/signin -H "Content-Type:application/json" -d '{"username":"user", "password":"password"}'
 
 {"timestamp":"2018-08-21T03:26:09.973+0000","status":401,"error":"Unauthorized","message":"Unauthorized","path":"/auth/signin"}
 ```
 
 
-- create token for 'User' by login/password (need Basic Authorization)
+- create token for 'User' by login/password (need only Basic Authorization)
 ```
 curl -X POST localhost:8080/auth/signin -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "Content-Type:application/json" -d '{"username":"user", "password":"password"}'
 
@@ -130,15 +138,7 @@ curl -X GET localhost:8080/me -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ
 ```
 
 
-- get description of root path '/api' (don't need Basic/JWT Authorization)
-```
-curl -X GET localhost:8080/api
-
-RESTfull API for money transfer
-```
-
-
-- get logs (need Basic Authorization)
+- get logs (need only Basic Authorization)
 ```
 curl -X GET localhost:8080/api/logs -H "Authorization: Basic YXBpOnBhc3N3b3Jk"
 
@@ -146,7 +146,7 @@ curl -X GET localhost:8080/api/logs -H "Authorization: Basic YXBpOnBhc3N3b3Jk"
 ```
 
 
-- get all accounts without Basic auth (need Basic Authorization)
+- get all accounts without Basic auth (need only Basic Authorization)
 ```
 curl -X GET localhost:8080/api/accounts
 
@@ -162,23 +162,23 @@ curl -X GET localhost:8080/api/accounts -H "Authorization: Basic YXBpOnBhc3N3b3J
 ```
 
 
-- make transfer by 'User' token = 403 Forbidden (need JWT Authorization)
+- make transfer by 'User' token = 403 Forbidden (need Basic and JWT Authorization)
 ```
-curl -X PUT localhost:8080/api/accounts/transfer -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDgyMTg3MywiZXhwIjoxNTM0OTA4MjczfQ.g_7zAMiITtfHYY7n1u3Jau8IdnRD7Zy1laJind55aao" -H "Content-Type: application/json" -d '{"from": 1002, "to": 1001, "amount": 100.51}'
+curl -X PUT localhost:8080/api/accounts/transfer -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDgyMTg3MywiZXhwIjoxNTM0OTA4MjczfQ.g_7zAMiITtfHYY7n1u3Jau8IdnRD7Zy1laJind55aao" -H "Content-Type: application/json" -d '{"from": 1002, "to": 1001, "amount": 100.51}'
 
 {"timestamp":"2018-08-21T03:37:40.918+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/accounts/transfer"}
 ```
 
 
-- make transfer by 'Admin' token = 200 OK (need JWT Authorization)
+- make transfer by 'Admin' token = 200 OK (need Basic and JWT Authorization)
 ```
-curl -X PUT localhost:8080/api/accounts/transfer -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0ODIxOTQwLCJleHAiOjE1MzQ5MDgzNDB9.rYn9KNIgaeu9VzbfTzlMf0oFRKEJ2xnaRC9pIhST800" -H "Content-Type: application/json" -d '{"from": 1002, "to": 1001, "amount": 100.51}'
+curl -X PUT localhost:8080/api/accounts/transfer -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0ODIxOTQwLCJleHAiOjE1MzQ5MDgzNDB9.rYn9KNIgaeu9VzbfTzlMf0oFRKEJ2xnaRC9pIhST800" -H "Content-Type: application/json" -d '{"from": 1002, "to": 1001, "amount": 100.51}'
 
 [{"accNumber":1001,"amount":1100.51,"lastUpdate":"2018-08-21T03:39:22.619635Z"},{"accNumber":1002,"amount":1899.49,"lastUpdate":"2018-08-21T03:39:22.619617Z"}]
 ```
 
 
-- make transfer without token = 403 Forbidden (need JWT Authorization)
+- make transfer without basic and token = 403 Forbidden (need JWT Authorization)
 ```
 curl -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, "amount": 100.51}'
 
@@ -186,39 +186,48 @@ curl -X PUT localhost:8080/api/accounts/transfer -d '{"from": 1002, "to": 1001, 
 ```
 
 
-- make deposit by 'User' token = 403 Forbidden (need JWT Authorization)
+- make deposit by 'User' token = 403 Forbidden (need Basic and JWT Authorization)
 ```
-curl -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDgyMTg3MywiZXhwIjoxNTM0OTA4MjczfQ.g_7zAMiITtfHYY7n1u3Jau8IdnRD7Zy1laJind55aao" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
+curl -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDgyMTg3MywiZXhwIjoxNTM0OTA4MjczfQ.g_7zAMiITtfHYY7n1u3Jau8IdnRD7Zy1laJind55aao" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
 
 {"timestamp":"2018-08-21T03:45:45.003+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/account/deposit"}
 ```
 
 
-- make deposit by 'Admin' token = 200 OK (need JWT Authorization)
+- make deposit by 'Admin' token = 200 OK (need Basic and JWT Authorization)
 ```
-curl -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0ODIxOTQwLCJleHAiOjE1MzQ5MDgzNDB9.rYn9KNIgaeu9VzbfTzlMf0oFRKEJ2xnaRC9pIhST800" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
+curl -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0ODIxOTQwLCJleHAiOjE1MzQ5MDgzNDB9.rYn9KNIgaeu9VzbfTzlMf0oFRKEJ2xnaRC9pIhST800" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/deposit -d '{"to": 1001, "amount": 199.56}'
 
 {"accNumber":1001,"amount":1400.58,"lastUpdate":"2018-08-21T03:47:48.179204Z"}
 ```
 
-- make withdraw by 'User' token = 403 Forbidden (need JWT Authorization)
-```curl -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDgyMTg3MywiZXhwIjoxNTM0OTA4MjczfQ.g_7zAMiITtfHYY7n1u3Jau8IdnRD7Zy1laJind55aao" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
+
+- make withdraw by 'User' token = 403 Forbidden (need Basic and JWT Authorization)
+```
+curl -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzNDgyMTg3MywiZXhwIjoxNTM0OTA4MjczfQ.g_7zAMiITtfHYY7n1u3Jau8IdnRD7Zy1laJind55aao" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
 
 {"timestamp":"2018-08-21T03:52:46.981+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/account/withdraw"}
 ```
 
 
-- make withdraw by 'Admin' token = 200 OK (need JWT Authorization)
+- make withdraw by 'Admin' token = 200 OK (need Basic and JWT Authorization)
 ```
-curl -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0ODIxOTQwLCJleHAiOjE1MzQ5MDgzNDB9.rYn9KNIgaeu9VzbfTzlMf0oFRKEJ2xnaRC9pIhST800" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
+curl -H "Authorization: Basic YXBpOnBhc3N3b3Jk" -H "x-auth-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfVVNFUiIsIlJPTEVfQURNSU4iXSwiaWF0IjoxNTM0ODIxOTQwLCJleHAiOjE1MzQ5MDgzNDB9.rYn9KNIgaeu9VzbfTzlMf0oFRKEJ2xnaRC9pIhST800" -H "Content-Type: application/json" -X PUT localhost:8080/api/account/withdraw -d '{"from": 1001, "amount": 99.56}'
 
 {"accNumber":1001,"amount":1301.02,"lastUpdate":"2018-08-21T03:56:28.975563Z"}
 ```
 
 
-- get account info by ID (need Basic Authorization)
+- get account info by ID without basic auth = 401 Unauthorized (need only Basic Authorization)
+```
+curl -X GET localhost:8080/api/account/1001
+
+{"timestamp":"2018-08-21T10:34:03.585+0000","status":401,"error":"Unauthorized","message":"Unauthorized","path":"/api/account/1001"}%
+```
+
+
+- get account info by ID (need only Basic Authorization)
 ```
 curl -X GET localhost:8080/api/account/1001 -H "Authorization: Basic YXBpOnBhc3N3b3Jk"
 
 {"accNumber":1001,"amount":1301.02,"lastUpdate":"2018-08-21T03:56:28.975563Z"}
-```

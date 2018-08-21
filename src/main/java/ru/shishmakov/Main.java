@@ -13,9 +13,10 @@ import ru.shishmakov.domain.User;
 import java.util.List;
 import java.util.Set;
 
-import static ru.shishmakov.security.CustomMemoryUserDetailsManager.WEB_API_PASSWORD;
-import static ru.shishmakov.security.CustomMemoryUserDetailsManager.WEB_API_ROLE;
-import static ru.shishmakov.security.CustomMemoryUserDetailsManager.WEB_API_USERNAME;
+import static ru.shishmakov.security.SecurityConfig.API_PASSWORD;
+import static ru.shishmakov.security.SecurityConfig.API_ROLE;
+import static ru.shishmakov.security.SecurityConfig.API_USERNAME;
+
 
 @SpringBootApplication
 public class Main {
@@ -35,9 +36,9 @@ public class Main {
         public void run(String... args) {
             userRepository.saveAll(List.of(
                     User.builder()
-                            .username(WEB_API_USERNAME)
-                            .password(this.passwordEncoder.encode(WEB_API_PASSWORD))
-                            .roles(Set.of(WEB_API_ROLE))
+                            .username(API_USERNAME)
+                            .password(passwordEncoder.encode(API_PASSWORD))
+                            .roles(Set.of("ROLE_" + API_ROLE))
                             .build(),
                     User.builder()
                             .username("user")

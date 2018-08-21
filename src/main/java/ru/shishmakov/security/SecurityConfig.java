@@ -16,16 +16,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static ru.shishmakov.security.CustomMemoryUserDetailsManager.WEB_API_PASSWORD;
-import static ru.shishmakov.security.CustomMemoryUserDetailsManager.WEB_API_ROLE;
-import static ru.shishmakov.security.CustomMemoryUserDetailsManager.WEB_API_USERNAME;
-
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    public static final String API_USERNAME = "api";
+    public static final String API_PASSWORD = "password";
+    public static final String API_ROLE = "API";
     private final JwtTokenProvider jwtTokenProvider;
-    private final CustomMemoryUserDetailsManager detailsService;
+    private final CustomUserDetailsManager detailsService;
 
     @Bean
     @Override
@@ -40,10 +39,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.apply(new CustomInMemoryUserDetailsManagerConfigurer<>(detailsService))
-                .withUser(WEB_API_USERNAME)
-                .password(WEB_API_PASSWORD)
-                .roles(WEB_API_ROLE);
+        auth.apply(new CustomUserDetailsManagerConfigurer<>(detailsService))
+                .withUser(API_USERNAME)
+                .password(API_PASSWORD)
+                .roles(API_ROLE);
     }
 
     @Override
@@ -60,19 +59,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.PUT, "/auth/signin").hasRole("API")
                 .antMatchers("/auth/decode").permitAll()
                 .antMatchers(HttpMethod.GET, "/api").permitAll() // don't need a token
-                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").hasRole("ADMIN") // need token
-//                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").access("hasRole('ROLE_API') or hasRole('ROLE_ADMIN')") // need token
+//                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").hasRole("ADMIN") // need token
+                .antMatchers(HttpMethod.PUT, "/api/accounts/transfer", "/api/account/**").access("hasRole('ROLE_API') and hasRole('ROLE_ADMIN')") // need token
                 .anyRequest().authenticated()
 
                 .and()
                 .apply(new JwtConfigurerAdapter(jwtTokenProvider));
-//                .and()
-//                .apply(new BasicConfigurerAdapter(basicTokenProvider));
     }
 
-    private static class CustomInMemoryUserDetailsManagerConfigurer<B extends ProviderManagerBuilder<B>>
-            extends UserDetailsManagerConfigurer<B, CustomInMemoryUserDetailsManagerConfigurer<B>> {
-        CustomInMemoryUserDetailsManagerConfigurer(CustomMemoryUserDetailsManager detailsService) {
+    private static class CustomUserDetailsManagerConfigurer<B extends ProviderManagerBuilder<B>>
+            extends UserDetailsManagerConfigurer<B, CustomUserDetailsManagerConfigurer<B>> {
+        CustomUserDetailsManagerConfigurer(CustomUserDetailsManager detailsService) {
             super(detailsService);
         }
     }

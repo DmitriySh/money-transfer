@@ -3,12 +3,20 @@ package ru.shishmakov.controller;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shishmakov.dao.AccountRepository;
 import ru.shishmakov.dao.LogRepository;
+import ru.shishmakov.dao.UserRepository;
 import ru.shishmakov.domain.Account;
 import ru.shishmakov.domain.Log;
+import ru.shishmakov.domain.User;
+import ru.shishmakov.security.JwtTokenProvider;
 import ru.shishmakov.web.ArgumentException;
 import ru.shishmakov.web.NotFoundException;
 
@@ -23,6 +31,10 @@ import java.util.Optional;
 public class AccountService {
     private final AccountRepository accRepository;
     private final LogRepository logRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
+
 
     public List<Account> getAccounts() {
         log.debug("get all accounts");
@@ -107,5 +119,16 @@ public class AccountService {
         Optional.ofNullable(number)
                 .filter(n -> n > 0)
                 .orElseThrow(() -> new ArgumentException("not positive " + desc + ": " + number));
+    }
+
+    public String createToken(String username, String password) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("Username '" + username + "' not found"));
+            return jwtTokenProvider.createToken(username, List.copyOf(user.getRoles()));
+        } catch (AuthenticationException e) {
+            throw new BadCredentialsException("invalid username/password supplied; msg: " + e.getMessage());
+        }
     }
 }

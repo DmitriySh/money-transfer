@@ -28,7 +28,7 @@ public class JwtTokenProvider {
     private String secretKey;
     @Value("${security.jwt.token.expire-length:86400000}") // 1 day
     private long ttl;
-    private static final String X_AUTH_TOKEN_HEADER = "x-auth-token";
+    private static final String X_AUTH_TOKEN_HEADER = "x-auth-token"; // replace to x-auth-token
 
     @PostConstruct
     protected void init() {

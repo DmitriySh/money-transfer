@@ -39,7 +39,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.apply(new CustomUserDetailsManagerConfigurer<>(detailsService))
+        auth.apply(new CustomUserDetailsManagerConfigurer<AuthenticationManagerBuilder>(detailsService))
+                .passwordEncoder(passwordEncoder())
                 .withUser(API_USERNAME)
                 .password(API_PASSWORD)
                 .roles(API_ROLE);

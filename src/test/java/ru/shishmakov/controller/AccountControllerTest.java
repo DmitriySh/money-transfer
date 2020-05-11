@@ -117,9 +117,9 @@ public class AccountControllerTest {
     @Test
     public void getAccountsShouldReturnAllAvailableAccounts() throws Exception {
         var accounts = List.of(
-                Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build(),
-                Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).updatedTime(ct).build(),
-                Account.builder().accNumber(300L).amount(new BigDecimal("3.0")).updatedTime(ct).build()
+                Account.builder().accountNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build(),
+                Account.builder().accountNumber(200L).amount(new BigDecimal("2.0")).updatedTime(ct).build(),
+                Account.builder().accountNumber(300L).amount(new BigDecimal("3.0")).updatedTime(ct).build()
         );
         doReturn(accounts).when(accountRepository).findAll();
 
@@ -135,38 +135,40 @@ public class AccountControllerTest {
 
     @Test
     public void getAccountShouldReturnAccountIfAvailable() throws Exception {
-        Account account = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        doReturn(Optional.of(account)).when(accountRepository).findByAccNumber(anyLong());
+        Account account = Account.builder().accountNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
+        doReturn(Optional.of(account)).when(accountRepository).findByAccountNumber(anyLong());
 
 
         mockMvc.perform(get("/api/account/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.accNumber").value(100L))
+                .andExpect(jsonPath("$.accountNumber").value(100L))
                 .andExpect(jsonPath("$.amount").value(1.0));
 
         verify(accountService).getAccount(anyLong());
-        verify(accountRepository).findByAccNumber(anyLong());
+        verify(accountRepository).findByAccountNumber(anyLong());
     }
 
     @Test
     public void getAccountShouldNotReturnAccountIfNotAvailable() throws Exception {
-        doReturn(Optional.empty()).when(accountRepository).findByAccNumber(anyLong());
+        doReturn(Optional.empty()).when(accountRepository).findByAccountNumber(anyLong());
 
         mockMvc.perform(get("/api/account/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$").doesNotExist());
 
         verify(accountService).getAccount(anyLong());
-        verify(accountRepository).findByAccNumber(anyLong());
+        verify(accountRepository).findByAccountNumber(anyLong());
     }
 
     @Test
     public void putTransferShouldPerformSuccessfullyIfRequestValid() throws Exception {
         // 1.0 ->(+1.0)-> 1.0
-        Account from = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        TransferDTO transfer = TransferDTO.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        Account from = Account.builder().accountNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
+        Account to = Account.builder().accountNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
+        TransferDTO transfer = TransferDTO.builder()
+                .from(from.getAccountNumber()).to(to.getAccountNumber())
+                .amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(from)).doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).saveAll(anyList());
 
@@ -180,8 +182,8 @@ public class AccountControllerTest {
 
         // 0.0 : 2.0
         assertThat(response.getContentAsString()).isEqualTo(json.write(List.of(
-                AccountDTO.builder().accNumber(100L).amount(new BigDecimal("0.0")).build(),
-                AccountDTO.builder().accNumber(200L).amount(new BigDecimal("2.0")).build()
+                AccountDTO.builder().accountNumber(100L).amount(new BigDecimal("0.0")).build(),
+                AccountDTO.builder().accountNumber(200L).amount(new BigDecimal("2.0")).build()
         )).getJson());
 
         verify(accountService).transfer(anyLong(), anyLong(), any(BigDecimal.class));
@@ -221,8 +223,8 @@ public class AccountControllerTest {
     @Test
     public void putDepositShouldPerformSuccessfullyIfRequestValid() throws Exception {
         // (+1.0) -> 1.0
-        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        TransferDTO transfer = TransferDTO.builder().to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        Account to = Account.builder().accountNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
+        TransferDTO transfer = TransferDTO.builder().to(to.getAccountNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).save(any(Account.class));
 
@@ -236,7 +238,7 @@ public class AccountControllerTest {
 
         // 2.0
         assertThat(response.getContentAsString()).isEqualTo(json.write(
-                AccountDTO.builder().accNumber(200L).amount(new BigDecimal("2.0")).build()
+                AccountDTO.builder().accountNumber(200L).amount(new BigDecimal("2.0")).build()
         ).getJson());
 
         verify(accountService).deposit(anyLong(), any(BigDecimal.class));
@@ -247,8 +249,8 @@ public class AccountControllerTest {
     @Test
     public void putDepositShouldFailIfAmountNegative() throws Exception {
         // (-1.0) -> 1.0
-        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).build();
-        TransferDTO transfer = TransferDTO.builder().to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
+        Account to = Account.builder().accountNumber(200L).amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().to(to.getAccountNumber()).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
                 .contentType(APPLICATION_JSON)
@@ -277,8 +279,8 @@ public class AccountControllerTest {
     @Test
     public void putWithdrawShouldPerformSuccessfullyIfRequestValid() throws Exception {
         // (+1.0) <- 1.0
-        Account from = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        TransferDTO transfer = TransferDTO.builder().from(from.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        Account from = Account.builder().accountNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
+        TransferDTO transfer = TransferDTO.builder().from(from.getAccountNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(from)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).save(any(Account.class));
 
@@ -288,7 +290,7 @@ public class AccountControllerTest {
                         .content(json.write(transfer).getJson()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.accNumber").value(200L))
+                .andExpect(jsonPath("$.accountNumber").value(200L))
                 .andExpect(jsonPath("$.amount").value(0.0));
 
         verify(accountService).withdraw(anyLong(), any(BigDecimal.class));

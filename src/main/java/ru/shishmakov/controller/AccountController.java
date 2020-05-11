@@ -43,7 +43,7 @@ public class AccountController {
     public ResponseEntity<List<AccountDTO>> getAccounts() {
         return new ResponseEntity<>(service.getAccounts().stream()
                 .map(t -> AccountDTO.builder()
-                        .accNumber(t.getAccNumber()).amount(t.getAmount())
+                        .accountNumber(t.getAccountNumber()).amount(t.getAmount())
                         .build())
                 .collect(Collectors.toList()), OK);
     }
@@ -55,7 +55,7 @@ public class AccountController {
             requireNonNull(transfer.getTo());
             var accounts = service.transfer(transfer.getFrom(), transfer.getTo(), transfer.getAmount())
                     .stream().map(t -> AccountDTO.builder()
-                            .accNumber(t.getAccNumber()).amount(t.getAmount())
+                            .accountNumber(t.getAccountNumber()).amount(t.getAmount())
                             .build())
                     .collect(Collectors.toList());
             return new ResponseEntity<>(accounts, OK);
@@ -69,7 +69,7 @@ public class AccountController {
     public ResponseEntity<AccountDTO> getAccount(@PathVariable("accNumber") long accNumber) {
         return service.getAccount(accNumber)
                 .map(a -> AccountDTO.builder()
-                        .accNumber(a.getAccNumber()).amount(a.getAmount())
+                        .accountNumber(a.getAccountNumber()).amount(a.getAmount())
                         .build())
                 .map(a -> new ResponseEntity<>(a, OK))
                 .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
@@ -81,7 +81,7 @@ public class AccountController {
             requireNonNull(transfer.getTo());
             var account = service.deposit(transfer.getTo(), transfer.getAmount());
             return new ResponseEntity<>(AccountDTO.builder()
-                    .accNumber(account.getAccNumber()).amount(account.getAmount())
+                    .accountNumber(account.getAccountNumber()).amount(account.getAmount())
                     .build(), OK);
         } catch (Exception e) {
             log.error("transfer error", e);
@@ -94,7 +94,7 @@ public class AccountController {
         try {
             var account = service.withdraw(requireNonNull(transfer.getFrom()), transfer.getAmount());
             return new ResponseEntity<>(AccountDTO.builder()
-                    .accNumber(account.getAccNumber()).amount(account.getAmount())
+                    .accountNumber(account.getAccountNumber()).amount(account.getAmount())
                     .build(), OK);
         } catch (Exception e) {
             log.error("transfer error", e);

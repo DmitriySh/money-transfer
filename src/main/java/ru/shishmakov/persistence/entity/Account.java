@@ -2,6 +2,7 @@ package ru.shishmakov.persistence.entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
@@ -33,7 +34,8 @@ public class Account {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    private Long accNumber;
+    @Column(name = "acc_number")
+    private Long accountNumber;
 
     @PositiveOrZero
     private BigDecimal amount;

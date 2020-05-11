@@ -19,7 +19,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonInclude(value = NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountDTO {
-    private Long accNumber;
+    private Long accountNumber;
     private BigDecimal amount;
     private Instant createdTime;
     private Instant updatedTime;

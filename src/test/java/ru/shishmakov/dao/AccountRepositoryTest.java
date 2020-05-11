@@ -42,7 +42,7 @@ public class AccountRepositoryTest {
 
     @Test
     public void findByAccNumberShouldReturnAccountIfAvailable() {
-        Optional<Account> account = accountRepository.findByAccNumber(1001L);
+        Optional<Account> account = accountRepository.findByAccountNumber(1001L);
 
         assertThat(account)
                 .isNotNull()
@@ -51,7 +51,7 @@ public class AccountRepositoryTest {
 
     @Test
     public void findByAccNumberShouldNotReturnAccountIfNotAvailable() {
-        Optional<Account> account = accountRepository.findByAccNumber(1999L);
+        Optional<Account> account = accountRepository.findByAccountNumber(1999L);
 
         assertThat(account)
                 .isNotNull()
@@ -78,8 +78,12 @@ public class AccountRepositoryTest {
 
     @Test
     public void saveShouldPersistAccountObjectIfValid() {
-        Account blankAccount = Account.builder().accNumber(1999L).amount(new BigDecimal("1.0")).build();
-        Account saved = accountRepository.save(Account.builder().accNumber(1999L).amount(new BigDecimal("1.0")).build());
+        Account blankAccount = Account.builder()
+                .accountNumber(1999L).amount(new BigDecimal("1.0"))
+                .build();
+        Account saved = accountRepository.save(Account.builder()
+                .accountNumber(1999L).amount(new BigDecimal("1.0"))
+                .build());
 
         assertThat(blankAccount)
                 .isNotNull()
@@ -93,8 +97,10 @@ public class AccountRepositoryTest {
 
     @Test
     public void saveShouldNotPersistAccountObjectIfNotValid() {
-        assertThatThrownBy(() -> accountRepository.save(Account.builder().accNumber(1999L).amount(new BigDecimal("-1.0")).build()))
-                .isInstanceOf(ConstraintViolationException.class)
+        assertThatThrownBy(() -> accountRepository.save(Account.builder()
+                .accountNumber(1999L).amount(new BigDecimal("-1.0"))
+                .build())
+        ).isInstanceOf(ConstraintViolationException.class)
                 .hasMessageContaining("must be greater than or equal to 0");
     }
 }

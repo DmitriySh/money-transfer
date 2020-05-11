@@ -131,9 +131,15 @@ public class RestIT {
         List<Account> accounts = mapper.readValue(response.getContentAsString(), new TypeReference<List<Account>>() {
         });
         accounts.forEach(a -> {
-            if (a.getAccNumber() == 1001L) assertThat(a.getAmount()).isEqualByComparingTo(new BigDecimal("1000.00"));
-            if (a.getAccNumber() == 1002L) assertThat(a.getAmount()).isEqualByComparingTo(new BigDecimal("2000.00"));
-            if (a.getAccNumber() == 1003L) assertThat(a.getAmount()).isEqualByComparingTo(new BigDecimal("3000.00"));
+            if (a.getAccountNumber() == 1001L) {
+                assertThat(a.getAmount()).isEqualByComparingTo(new BigDecimal("1000.00"));
+            }
+            if (a.getAccountNumber() == 1002L) {
+                assertThat(a.getAmount()).isEqualByComparingTo(new BigDecimal("2000.00"));
+            }
+            if (a.getAccountNumber() == 1003L) {
+                assertThat(a.getAmount()).isEqualByComparingTo(new BigDecimal("3000.00"));
+            }
         });
     }
 

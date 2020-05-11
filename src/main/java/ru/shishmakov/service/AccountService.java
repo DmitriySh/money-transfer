@@ -29,22 +29,22 @@ public class AccountService {
         return accountAuditRepository.findAll();
     }
 
-    public Optional<Account> getAccount(long accNumber) {
-        log.debug("get account: {}", accNumber);
-        return accountRepository.findByAccNumber(accNumber);
+    public Optional<Account> getAccount(long accountNumber) {
+        log.debug("get account: {}", accountNumber);
+        return accountRepository.findByAccountNumber(accountNumber);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Account withdraw(long number, BigDecimal amount) {
+    public Account withdraw(long accountNumber, BigDecimal amount) {
         checkAmount(amount);
         var account = accountRepository
-                .findByAccNumberAndLock(number)
-                .orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+                .findByAccNumberAndLock(accountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("not found id: " + accountNumber));
         decreaseAmount(account, amount);
 
-        log.debug("withdraw account: {}, amount: {}", number, amount);
+        log.debug("withdraw account: {}, amount: {}", accountNumber, amount);
         accountAuditRepository.save(AccountAudit.builder()
-                .fromNumber(number).amount(amount)
+                .fromNumber(accountNumber).amount(amount)
                 .description("withdraw").build());
         return accountRepository.save(account);
     }
@@ -74,8 +74,8 @@ public class AccountService {
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + first));
         var secondAccount = accountRepository.findByAccNumberAndLock(second)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + second));
-        decreaseAmount(firstAccount.getAccNumber().equals(from) ? firstAccount : secondAccount, amount);
-        increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
+        decreaseAmount(firstAccount.getAccountNumber().equals(from) ? firstAccount : secondAccount, amount);
+        increaseAmount(firstAccount.getAccountNumber().equals(to) ? firstAccount : secondAccount, amount);
 
         log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
         accountAuditRepository.save(AccountAudit.builder()

@@ -15,8 +15,8 @@ import static javax.persistence.LockModeType.PESSIMISTIC_WRITE;
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Lock(PESSIMISTIC_WRITE)
-    @Query("select a from Account a where a.accNumber = :accNumber")
-    Optional<Account> findByAccNumberAndLock(@Param("accNumber") long accNumber);
+    @Query("select a from Account a where a.accountNumber = :accNumber")
+    Optional<Account> findByAccNumberAndLock(@Param("accNumber") long accountNumber);
 
-    Optional<Account> findByAccNumber(long accNumber);
+    Optional<Account> findByAccountNumber(long accountNumber);
 }

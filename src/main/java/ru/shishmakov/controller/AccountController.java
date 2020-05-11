@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.shishmakov.dto.AccountAuditDTO;
 import ru.shishmakov.dto.AccountDTO;
 import ru.shishmakov.dto.TransferDTO;
-import ru.shishmakov.persistence.entity.AccountAudit;
 import ru.shishmakov.service.AccountService;
 
 
@@ -35,8 +35,13 @@ public class AccountController {
     }
 
     @GetMapping("/logs")
-    public ResponseEntity<List<AccountAudit>> getLogRecords() {
-        return new ResponseEntity<>(service.getAccountAudits(), OK);
+    public ResponseEntity<List<AccountAuditDTO>> getLogRecords() {
+        return new ResponseEntity<>(service.getAccountAudits().stream()
+                .map(a -> AccountAuditDTO.builder()
+                        .fromNumber(a.getFromNumber()).toNumber(a.getToNumber())
+                        .amount(a.getAmount()).description(a.getDescription())
+                        .build())
+                .collect(Collectors.toList()), OK);
     }
 
     @GetMapping("/accounts")

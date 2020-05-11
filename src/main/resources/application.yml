@@ -1,5 +1,7 @@
 ---
 spring:
+  application:
+    name: money-transfer
   datasource:
     url: jdbc:h2:mem:testdb
     initialization-mode: always

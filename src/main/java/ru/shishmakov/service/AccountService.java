@@ -1,17 +1,16 @@
 package ru.shishmakov.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.shishmakov.dao.AccountRepository;
-import ru.shishmakov.dao.AccountAuditRepository;
-import ru.shishmakov.model.Account;
-import ru.shishmakov.model.AccountAudit;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import ru.shishmakov.persistence.entity.Account;
+import ru.shishmakov.persistence.entity.AccountAudit;
+import ru.shishmakov.persistence.repository.AccountAuditRepository;
+import ru.shishmakov.persistence.repository.AccountRepository;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class AccountService {
     @Transactional(rollbackFor = Exception.class)
     public Account withdraw(long number, BigDecimal amount) {
         checkAmount(amount);
-        Account account = accountRepository
+        var account = accountRepository
                 .findByAccNumberAndLock(number)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
         decreaseAmount(account, amount);
@@ -53,7 +52,7 @@ public class AccountService {
     @Transactional(rollbackFor = Exception.class)
     public Account deposit(long number, BigDecimal amount) {
         checkAmount(amount);
-        Account account = accountRepository
+        var account = accountRepository
                 .findByAccNumberAndLock(number)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
         increaseAmount(account, amount);
@@ -68,17 +67,17 @@ public class AccountService {
     @Transactional(rollbackFor = Exception.class)
     public List<Account> transfer(long from, long to, BigDecimal amount) {
         checkAmount(amount);
-        long first = Math.min(from, to);
-        long second = Math.max(from, to);
+        var first = Math.min(from, to);
+        var second = Math.max(from, to);
 
-        Account firstAccount = accountRepository.findByAccNumberAndLock(first)
+        var firstAccount = accountRepository.findByAccNumberAndLock(first)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + first));
-        Account secondAccount = accountRepository.findByAccNumberAndLock(second)
+        var secondAccount = accountRepository.findByAccNumberAndLock(second)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + second));
         decreaseAmount(firstAccount.getAccNumber().equals(from) ? firstAccount : secondAccount, amount);
         increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
 
-        AccountService.log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
+        log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
         accountAuditRepository.save(AccountAudit.builder()
                 .fromNumber(from).toNumber(to).amount(amount)
                 .description("transfer").build());

@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
-@EntityScan("ru.shishmakov.model")
+@EntityScan("ru.shishmakov.persistence")
 @EnableJpaAuditing
 public class JpaConfiguration {
 

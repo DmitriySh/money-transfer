@@ -1,6 +1,5 @@
-package ru.shishmakov.model;
+package ru.shishmakov.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 import java.time.Instant;
 import javax.persistence.Entity;
@@ -32,7 +31,6 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class Account {
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @JsonIgnore
     private Long id;
 
     private Long accNumber;

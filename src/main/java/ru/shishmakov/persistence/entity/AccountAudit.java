@@ -1,7 +1,5 @@
-package ru.shishmakov.model;
+package ru.shishmakov.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
 import java.time.Instant;
 import javax.persistence.Basic;
@@ -19,7 +17,6 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static javax.persistence.GenerationType.IDENTITY;
 
 @Builder
@@ -31,13 +28,10 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class AccountAudit {
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @JsonIgnore
     private Long id;
 
-    @JsonInclude(NON_NULL)
     private Long fromNumber;
 
-    @JsonInclude(NON_NULL)
     private Long toNumber;
 
     @PositiveOrZero

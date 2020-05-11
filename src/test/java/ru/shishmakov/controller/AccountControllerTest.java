@@ -24,16 +24,18 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.shishmakov.dao.AccountRepository;
-import ru.shishmakov.dao.AccountAuditRepository;
-import ru.shishmakov.model.Account;
-import ru.shishmakov.model.AccountAudit;
-import ru.shishmakov.model.Transfer;
+import ru.shishmakov.dto.AccountDTO;
+import ru.shishmakov.dto.TransferDTO;
+import ru.shishmakov.persistence.entity.Account;
+import ru.shishmakov.persistence.entity.AccountAudit;
+import ru.shishmakov.persistence.repository.AccountAuditRepository;
+import ru.shishmakov.persistence.repository.AccountRepository;
 import ru.shishmakov.service.AccountService;
 
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -44,13 +46,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -96,18 +97,18 @@ public class AccountControllerTest {
 
     @Test
     public void getLogsShouldReturnAllAvailableTransactions() throws Exception {
-        List<AccountAudit> data = List.of(
+        var accountAudits = List.of(
                 AccountAudit.builder().createdTime(ct).amount(new BigDecimal("2.0")).toNumber(100L).description("deposit").build(),
                 AccountAudit.builder().createdTime(ct).amount(new BigDecimal("1.0")).fromNumber(100L).description("withdraw").build(),
                 AccountAudit.builder().createdTime(ct).amount(new BigDecimal("1.0")).fromNumber(100L).toNumber(200L).description("transfer").build()
         );
-        doReturn(data).when(accountAuditRepository).findAll();
+        doReturn(accountAudits).when(accountAuditRepository).findAll();
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/logs")).andReturn().getResponse();
-
-        assertThat(response.getStatus()).isEqualTo(OK.value());
-        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
-        assertThat(response.getContentAsString()).isEqualTo(json.write(data).getJson());
+        mockMvc.perform(get("/api/logs"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[*]", hasSize(3)));
 
         verify(accountService).getAccountAudits();
         verify(accountAuditRepository).findAll();
@@ -115,18 +116,18 @@ public class AccountControllerTest {
 
     @Test
     public void getAccountsShouldReturnAllAvailableAccounts() throws Exception {
-        List<Account> data = List.of(
+        var accounts = List.of(
                 Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build(),
                 Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).updatedTime(ct).build(),
                 Account.builder().accNumber(300L).amount(new BigDecimal("3.0")).updatedTime(ct).build()
         );
-        doReturn(data).when(accountRepository).findAll();
+        doReturn(accounts).when(accountRepository).findAll();
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/accounts")).andReturn().getResponse();
-
-        assertThat(response.getStatus()).isEqualTo(OK.value());
-        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
-        assertThat(response.getContentAsString()).isEqualTo(json.write(data).getJson());
+        mockMvc.perform(get("/api/accounts"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[*]", hasSize(3)));
 
         verify(accountService).getAccounts();
         verify(accountRepository).findAll();
@@ -137,11 +138,12 @@ public class AccountControllerTest {
         Account account = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
         doReturn(Optional.of(account)).when(accountRepository).findByAccNumber(anyLong());
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/account/1")).andReturn().getResponse();
 
-        assertThat(response.getStatus()).isEqualTo(OK.value());
-        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
-        assertThat(response.getContentAsString()).isEqualTo(json.write(account).getJson());
+        mockMvc.perform(get("/api/account/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.accNumber").value(100L))
+                .andExpect(jsonPath("$.amount").value(1.0));
 
         verify(accountService).getAccount(anyLong());
         verify(accountRepository).findByAccNumber(anyLong());
@@ -151,11 +153,9 @@ public class AccountControllerTest {
     public void getAccountShouldNotReturnAccountIfNotAvailable() throws Exception {
         doReturn(Optional.empty()).when(accountRepository).findByAccNumber(anyLong());
 
-        MockHttpServletResponse response = mockMvc.perform(get("/api/account/1")).andReturn().getResponse();
-
-        assertThat(response.getStatus()).isEqualTo(NOT_FOUND.value());
-        assertThat(response.getContentType()).isNull();
-        assertThat(response.getContentAsString()).isBlank();
+        mockMvc.perform(get("/api/account/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$").doesNotExist());
 
         verify(accountService).getAccount(anyLong());
         verify(accountRepository).findByAccNumber(anyLong());
@@ -166,7 +166,7 @@ public class AccountControllerTest {
         // 1.0 ->(+1.0)-> 1.0
         Account from = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Transfer transfer = Transfer.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(from)).doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).saveAll(anyList());
 
@@ -174,14 +174,14 @@ public class AccountControllerTest {
                 .perform(put("/api/accounts/transfer")
                         .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn().getResponse();
 
         // 0.0 : 2.0
-        assertThat(response.getStatus()).isEqualTo(OK.value());
-        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(json.write(List.of(
-                Account.builder().accNumber(100L).amount(new BigDecimal("0.0")).updatedTime(ct).build(),
-                Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).updatedTime(ct).build()
+                AccountDTO.builder().accNumber(100L).amount(new BigDecimal("0.0")).build(),
+                AccountDTO.builder().accNumber(200L).amount(new BigDecimal("2.0")).build()
         )).getJson());
 
         verify(accountService).transfer(anyLong(), anyLong(), any(BigDecimal.class));
@@ -192,9 +192,7 @@ public class AccountControllerTest {
     @Test
     public void putTransferShouldFailIfAmountNegative() throws Exception {
         // 1.0 ->(-1.0)-> 1.0
-        Account from = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Transfer transfer = Transfer.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().from(100L).to(200L).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/accounts/transfer")
                 .contentType(APPLICATION_JSON)
@@ -209,7 +207,7 @@ public class AccountControllerTest {
 
     @Test
     public void putTransferShouldFailIfTransferObjectNotValid() throws Exception {
-        Transfer transfer = Transfer.builder().amount(new BigDecimal("-1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/accounts/transfer")
                 .contentType(APPLICATION_JSON)
@@ -224,7 +222,7 @@ public class AccountControllerTest {
     public void putDepositShouldPerformSuccessfullyIfRequestValid() throws Exception {
         // (+1.0) -> 1.0
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Transfer transfer = Transfer.builder().to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).save(any(Account.class));
 
@@ -232,13 +230,13 @@ public class AccountControllerTest {
                 .perform(put("/api/account/deposit")
                         .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn().getResponse();
 
         // 2.0
-        assertThat(response.getStatus()).isEqualTo(OK.value());
-        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(json.write(
-                Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).updatedTime(ct).build()
+                AccountDTO.builder().accNumber(200L).amount(new BigDecimal("2.0")).build()
         ).getJson());
 
         verify(accountService).deposit(anyLong(), any(BigDecimal.class));
@@ -249,8 +247,8 @@ public class AccountControllerTest {
     @Test
     public void putDepositShouldFailIfAmountNegative() throws Exception {
         // (-1.0) -> 1.0
-        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Transfer transfer = Transfer.builder().to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
+        Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
                 .contentType(APPLICATION_JSON)
@@ -265,7 +263,7 @@ public class AccountControllerTest {
 
     @Test
     public void putDepositShouldFailIfTransferObjectNotValid() throws Exception {
-        Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
                 .contentType(APPLICATION_JSON)
@@ -280,22 +278,18 @@ public class AccountControllerTest {
     public void putWithdrawShouldPerformSuccessfullyIfRequestValid() throws Exception {
         // (+1.0) <- 1.0
         Account from = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Transfer transfer = Transfer.builder().from(from.getAccNumber()).amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().from(from.getAccNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(from)).when(accountRepository).findByAccNumberAndLock(anyLong());
         doAnswer(in -> in.getArguments()[0]).when(accountRepository).save(any(Account.class));
 
-        MockHttpServletResponse response = mockMvc
+        mockMvc
                 .perform(put("/api/account/withdraw")
                         .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
-                .andReturn().getResponse();
-
-        // 0.0
-        assertThat(response.getStatus()).isEqualTo(OK.value());
-        assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
-        assertThat(response.getContentAsString()).isEqualTo(json.write(
-                Account.builder().accNumber(200L).amount(new BigDecimal("0.0")).updatedTime(ct).build()
-        ).getJson());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.accNumber").value(200L))
+                .andExpect(jsonPath("$.amount").value(0.0));
 
         verify(accountService).withdraw(anyLong(), any(BigDecimal.class));
         verify(accountRepository).findByAccNumberAndLock(anyLong());
@@ -305,8 +299,7 @@ public class AccountControllerTest {
     @Test
     public void putWithdrawShouldFailIfAmountNegative() throws Exception {
         // (-1.0) <- 1.0
-        Account from = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).updatedTime(ct).build();
-        Transfer transfer = Transfer.builder().from(from.getAccNumber()).amount(new BigDecimal("-1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().from(200L).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/account/withdraw")
                 .contentType(APPLICATION_JSON)
@@ -321,7 +314,7 @@ public class AccountControllerTest {
 
     @Test
     public void putWithdrawShouldFailIfTransferObjectNotValid() throws Exception {
-        Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
+        TransferDTO transfer = TransferDTO.builder().amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/withdraw")
                 .contentType(APPLICATION_JSON)

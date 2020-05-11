@@ -1,5 +1,9 @@
 package ru.shishmakov.dao;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import javax.validation.ConstraintViolationException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
@@ -7,12 +11,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.shishmakov.model.Account;
+import ru.shishmakov.persistence.entity.Account;
+import ru.shishmakov.persistence.repository.AccountRepository;
 
-import javax.validation.ConstraintViolationException;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

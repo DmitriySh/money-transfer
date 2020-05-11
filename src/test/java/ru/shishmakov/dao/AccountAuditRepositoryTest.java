@@ -10,7 +10,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.shishmakov.model.AccountAudit;
+import ru.shishmakov.persistence.entity.AccountAudit;
+import ru.shishmakov.persistence.repository.AccountAuditRepository;
 
 
 import static java.util.Objects.isNull;

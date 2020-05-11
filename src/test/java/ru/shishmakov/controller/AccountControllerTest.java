@@ -5,6 +5,12 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,20 +29,22 @@ import ru.shishmakov.dao.LogRepository;
 import ru.shishmakov.model.Account;
 import ru.shishmakov.model.Log;
 import ru.shishmakov.model.Transfer;
+import ru.shishmakov.service.AccountService;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyIterable;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -50,8 +58,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Test Web layer without JPA
  */
 @RunWith(SpringRunner.class)
-@WebMvcTest(ApiController.class)
-public class ApiControllerTest {
+@WebMvcTest(AccountController.class)
+public class AccountControllerTest {
 
     private static final Instant ct = Instant.now();
 
@@ -88,7 +96,7 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void getLogsShouldReturnArray() throws Exception {
+    public void getLogsShouldReturnAllAvailableTransactions() throws Exception {
         List<Log> data = List.of(
                 Log.builder().date(ct).amount(new BigDecimal("2.0")).toNumber(100L).description("deposit").build(),
                 Log.builder().date(ct).amount(new BigDecimal("1.0")).fromNumber(100L).description("withdraw").build(),
@@ -107,7 +115,7 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void getAccountsShouldReturnArray() throws Exception {
+    public void getAccountsShouldReturnAllAvailableAccounts() throws Exception {
         List<Account> data = List.of(
                 Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).lastUpdate(ct).build(),
                 Account.builder().accNumber(200L).amount(new BigDecimal("2.0")).lastUpdate(ct).build(),
@@ -155,7 +163,8 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putTransferShouldPerformIfRequestValid() throws Exception {
+    public void putTransferShouldPerformSuccessfullyIfRequestValid() throws Exception {
+        // 1.0 ->(+1.0)-> 1.0
         Account from = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
@@ -169,6 +178,7 @@ public class ApiControllerTest {
                         .content(json.write(transfer).getJson()))
                 .andReturn().getResponse();
 
+        // 0.0 : 2.0
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(json.write(List.of(
@@ -182,7 +192,8 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putTransferShouldNotPerformIfAmountNegative() throws Exception {
+    public void putTransferShouldFailIfAmountNegative() throws Exception {
+        // 1.0 ->(-1.0)-> 1.0
         Account from = Account.builder().accNumber(100L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().from(from.getAccNumber()).to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
@@ -199,7 +210,7 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putTransferShouldNotPerformIfTransferObjectNotValid() throws Exception {
+    public void putTransferShouldFailIfTransferObjectNotValid() throws Exception {
         Transfer transfer = Transfer.builder().amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/accounts/transfer")
@@ -212,7 +223,8 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putDepositShouldPerformIfRequestValid() throws Exception {
+    public void putDepositShouldPerformSuccessfullyIfRequestValid() throws Exception {
+        // (+1.0) -> 1.0
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().to(to.getAccNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(to)).when(accountRepository).findByAccNumberAndLock(anyLong());
@@ -225,6 +237,7 @@ public class ApiControllerTest {
                         .content(json.write(transfer).getJson()))
                 .andReturn().getResponse();
 
+        // 2.0
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(json.write(
@@ -237,7 +250,8 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putDepositShouldNotPerformIfAmountNegative() throws Exception {
+    public void putDepositShouldFailIfAmountNegative() throws Exception {
+        // (-1.0) -> 1.0
         Account to = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().to(to.getAccNumber()).amount(new BigDecimal("-1.0")).build();
 
@@ -253,7 +267,7 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putDepositShouldNotPerformIfTransferObjectNotValid() throws Exception {
+    public void putDepositShouldFailIfTransferObjectNotValid() throws Exception {
         Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
@@ -266,7 +280,8 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putWithdrawShouldPerformIfRequestValid() throws Exception {
+    public void putWithdrawShouldPerformSuccessfullyIfRequestValid() throws Exception {
+        // (+1.0) <- 1.0
         Account from = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().from(from.getAccNumber()).amount(new BigDecimal("1.0")).build();
         doReturn(Optional.of(from)).when(accountRepository).findByAccNumberAndLock(anyLong());
@@ -279,6 +294,7 @@ public class ApiControllerTest {
                         .content(json.write(transfer).getJson()))
                 .andReturn().getResponse();
 
+        // 0.0
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentType()).contains(APPLICATION_JSON_VALUE);
         assertThat(response.getContentAsString()).isEqualTo(json.write(
@@ -291,7 +307,8 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putWithdrawShouldNotPerformIfAmountNegative() throws Exception {
+    public void putWithdrawShouldFailIfAmountNegative() throws Exception {
+        // (-1.0) <- 1.0
         Account from = Account.builder().accNumber(200L).amount(new BigDecimal("1.0")).lastUpdate(ct).build();
         Transfer transfer = Transfer.builder().from(from.getAccNumber()).amount(new BigDecimal("-1.0")).build();
 
@@ -307,7 +324,7 @@ public class ApiControllerTest {
     }
 
     @Test
-    public void putWithdrawShouldNotPerformIfTransferObjectNotValid() throws Exception {
+    public void putWithdrawShouldFailIfTransferObjectNotValid() throws Exception {
         Transfer transfer = Transfer.builder().amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/withdraw")

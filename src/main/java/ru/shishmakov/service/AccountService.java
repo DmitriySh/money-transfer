@@ -1,4 +1,4 @@
-package ru.shishmakov.controller;
+package ru.shishmakov.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.RequiredArgsConstructor;
@@ -87,8 +87,7 @@ public class AccountService {
         updateDate(account);
     }
 
-    @VisibleForTesting
-    void updateDate(Account account) {
+    public void updateDate(Account account) {
         account.setLastUpdate(Instant.now());
     }
 

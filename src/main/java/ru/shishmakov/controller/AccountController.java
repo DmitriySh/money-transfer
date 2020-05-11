@@ -9,6 +9,8 @@ import ru.shishmakov.model.Log;
 import ru.shishmakov.model.Transfer;
 
 import java.util.List;
+import ru.shishmakov.service.AccountService;
+
 
 import static java.util.Objects.requireNonNull;
 import static org.springframework.http.HttpStatus.*;
@@ -17,7 +19,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
-public class ApiController {
+public class AccountController {
     private final AccountService service;
 
     @GetMapping

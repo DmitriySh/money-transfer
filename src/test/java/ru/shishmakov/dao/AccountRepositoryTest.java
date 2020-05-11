@@ -83,7 +83,7 @@ public class AccountRepositoryTest {
         assertThat(blankAccount)
                 .isNotNull()
                 .matches(a -> isNull(a.getId()))
-                .matches(a -> isNull(a.getLastUpdate()));
+                .matches(a -> isNull(a.getUpdatedTime()));
         assertThat(saved)
                 .isNotNull()
                 .isNotEqualTo(blankAccount)

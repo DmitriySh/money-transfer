@@ -1,17 +1,15 @@
 package ru.shishmakov.service;
 
-import com.google.common.annotations.VisibleForTesting;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.shishmakov.dao.AccountRepository;
-import ru.shishmakov.dao.LogRepository;
+import ru.shishmakov.dao.AccountAuditRepository;
 import ru.shishmakov.model.Account;
-import ru.shishmakov.model.Log;
+import ru.shishmakov.model.AccountAudit;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,76 +17,80 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class AccountService {
-    private final AccountRepository accRepository;
-    private final LogRepository logRepository;
+    private final AccountRepository accountRepository;
+    private final AccountAuditRepository accountAuditRepository;
 
     public List<Account> getAccounts() {
         log.debug("get all accounts");
-        return accRepository.findAll();
+        return accountRepository.findAll();
     }
 
-    public List<Log> getLogRecords() {
-        log.debug("get log records");
-        return logRepository.findAll();
+    public List<AccountAudit> getAccountAudits() {
+        log.debug("get audit records");
+        return accountAuditRepository.findAll();
     }
 
     public Optional<Account> getAccount(long accNumber) {
         log.debug("get account: {}", accNumber);
-        return accRepository.findByAccNumber(accNumber);
+        return accountRepository.findByAccNumber(accNumber);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public Account withdraw(long number, BigDecimal amount) {
         checkAmount(amount);
-        Account account = accRepository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        Account account = accountRepository
+                .findByAccNumberAndLock(number)
+                .orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
         decreaseAmount(account, amount);
 
         log.debug("withdraw account: {}, amount: {}", number, amount);
-        logRepository.save(Log.builder().fromNumber(number).amount(amount).description("withdraw").date(Instant.now()).build());
-        return accRepository.save(account);
+        accountAuditRepository.save(AccountAudit.builder()
+                .fromNumber(number).amount(amount)
+                .description("withdraw").build());
+        return accountRepository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public Account deposit(long number, BigDecimal amount) {
         checkAmount(amount);
-        Account account = accRepository.findByAccNumberAndLock(number).orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
+        Account account = accountRepository
+                .findByAccNumberAndLock(number)
+                .orElseThrow(() -> new IllegalArgumentException("not found id: " + number));
         increaseAmount(account, amount);
 
         log.debug("deposit account: {}, amount: {}", number, amount);
-        logRepository.save(Log.builder().toNumber(number).amount(amount).description("deposit").date(Instant.now()).build());
-        return accRepository.save(account);
+        accountAuditRepository.save(AccountAudit.builder()
+                .toNumber(number).amount(amount)
+                .description("deposit").build());
+        return accountRepository.save(account);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public List<Account> transfer(long from, long to, BigDecimal amount) {
         checkAmount(amount);
-        long first = from < to ? from : to;
-        long second = from < to ? to : from;
+        long first = Math.min(from, to);
+        long second = Math.max(from, to);
 
-        Account firstAccount = accRepository.findByAccNumberAndLock(first)
+        Account firstAccount = accountRepository.findByAccNumberAndLock(first)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + first));
-        Account secondAccount = accRepository.findByAccNumberAndLock(second)
+        Account secondAccount = accountRepository.findByAccNumberAndLock(second)
                 .orElseThrow(() -> new IllegalArgumentException("not found id: " + second));
         decreaseAmount(firstAccount.getAccNumber().equals(from) ? firstAccount : secondAccount, amount);
         increaseAmount(firstAccount.getAccNumber().equals(to) ? firstAccount : secondAccount, amount);
 
         AccountService.log.debug("transfer amount: {}, accounts: {} -> {} ", amount, from, to);
-        logRepository.save(Log.builder().fromNumber(from).toNumber(to).amount(amount).description("transfer").date(Instant.now()).build());
-        return accRepository.saveAll(List.of(firstAccount, secondAccount));
+        accountAuditRepository.save(AccountAudit.builder()
+                .fromNumber(from).toNumber(to).amount(amount)
+                .description("transfer").build());
+        return accountRepository.saveAll(List.of(firstAccount, secondAccount));
     }
 
     private void increaseAmount(Account account, BigDecimal amount) {
         account.setAmount(account.getAmount().add(amount));
-        updateDate(account);
     }
 
     private void decreaseAmount(Account account, BigDecimal amount) {
         account.setAmount(account.getAmount().subtract(amount));
-        updateDate(account);
-    }
-
-    public void updateDate(Account account) {
-        account.setLastUpdate(Instant.now());
     }
 
     private static void checkAmount(BigDecimal amount) {

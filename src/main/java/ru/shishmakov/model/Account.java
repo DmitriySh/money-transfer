@@ -1,17 +1,24 @@
 package ru.shishmakov.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
-
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.Instant;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.PositiveOrZero;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -21,6 +28,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Setter
 @Getter
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Account {
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -32,7 +40,13 @@ public class Account {
     @PositiveOrZero
     private BigDecimal amount;
 
-    @Generated(GenerationTime.INSERT)
-    @Basic
-    private Instant lastUpdate;
+    @NotNull
+    @CreatedDate
+    @PastOrPresent
+    private Instant createdTime;
+
+    @NotNull
+    @LastModifiedDate
+    @PastOrPresent
+    private Instant updatedTime;
 }

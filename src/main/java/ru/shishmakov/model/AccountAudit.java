@@ -2,17 +2,22 @@ package ru.shishmakov.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
-
+import java.math.BigDecimal;
+import java.time.Instant;
 import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.PositiveOrZero;
-import java.math.BigDecimal;
-import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static javax.persistence.GenerationType.IDENTITY;
@@ -23,7 +28,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Setter
 @Getter
 @Entity
-public class Log {
+public class AccountAudit {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @JsonIgnore
@@ -42,5 +47,6 @@ public class Log {
 
     @Generated(GenerationTime.INSERT)
     @Basic
-    private Instant date;
+    @PastOrPresent
+    private Instant createdTime;
 }

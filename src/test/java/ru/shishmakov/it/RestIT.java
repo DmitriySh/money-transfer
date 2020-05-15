@@ -65,7 +65,7 @@ public class RestIT {
         checkStateAccounts();
         LongAdder count = new LongAdder();
 
-        // make transfers
+        // make deposit/withdraw
         executor.invokeAll(List.of(() -> {
             performDepositAndWithdraw(1001L, 1002L, new BigDecimal("11.03"), count);// 1001L -> 1002L
             return null;
@@ -152,9 +152,10 @@ public class RestIT {
         count.increment();
     }
 
-    private void performDepositAndWithdraw(long withdrawAcc, long depositAcc, BigDecimal amount, LongAdder count) throws Exception {
-        String depositJson = mapper.writer().writeValueAsString(TransferDTO.builder().to(depositAcc).amount(amount).build());
-        String withdrawJson = mapper.writer().writeValueAsString(TransferDTO.builder().from(withdrawAcc).amount(amount).build());
+    private void performDepositAndWithdraw(long withdrawAccountNumber, long depositAccountNumber,
+                                           BigDecimal amount, LongAdder count) throws Exception {
+        String depositJson = mapper.writer().writeValueAsString(TransferDTO.builder().to(depositAccountNumber).amount(amount).build());
+        String withdrawJson = mapper.writer().writeValueAsString(TransferDTO.builder().from(withdrawAccountNumber).amount(amount).build());
         for (int i = 0; i < 50; i++) {
             mockMvc.perform(put("/api/account/deposit").contentType(APPLICATION_JSON).content(depositJson))
                     .andReturn().getResponse();

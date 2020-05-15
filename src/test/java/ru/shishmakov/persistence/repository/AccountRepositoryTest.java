@@ -1,4 +1,4 @@
-package ru.shishmakov.dao;
+package ru.shishmakov.persistence.repository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.shishmakov.persistence.entity.Account;
-import ru.shishmakov.persistence.repository.AccountRepository;
 
 
 import static java.util.Objects.isNull;

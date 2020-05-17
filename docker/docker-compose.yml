@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: money-transfer-app
+    build:
+      dockerfile: docker/Dockerfile
+      context: ../
+    image: money-transfer
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:6006"
+    ports:
+      - "18080:8080"
+      - "6006:6006"

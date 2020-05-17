@@ -10,5 +10,5 @@ services:
     environment:
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:6006"
     ports:
-      - "18080:8080"
+      - "8080:8080"
       - "6006:6006"

@@ -99,7 +99,11 @@ BUILD SUCCESSFUL in 2s
 ```
 
 ## Docker
- * build image with app and start container
+ * build image with app and start container in the background
 ```bash
-~$ docker-compose -f ./docker/docker-compose.yml up --build
+~$ docker-compose -f ./docker/docker-compose.yml up -d --build
+```
+ * stop and remove container with app
+ ```bash
+~$ docker-compose -f ./docker/docker-compose.yml down
 ```

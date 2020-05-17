@@ -97,3 +97,9 @@ BUILD SUCCESSFUL in 2s
 21:24:39.236 [Thread-3] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown initiated...
 21:24:39.239 [Thread-3] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown completed.
 ```
+
+## Docker
+ * build image with app and start container
+```bash
+~$ docker-compose -f ./docker/docker-compose.yml up --build
+```

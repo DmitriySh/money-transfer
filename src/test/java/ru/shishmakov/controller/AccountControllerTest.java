@@ -5,24 +5,15 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.shishmakov.dto.AccountDTO;
 import ru.shishmakov.dto.TransferDTO;
@@ -32,40 +23,33 @@ import ru.shishmakov.persistence.repository.AccountAuditRepository;
 import ru.shishmakov.persistence.repository.AccountRepository;
 import ru.shishmakov.service.AccountService;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.anyIterable;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Test Web layer without JPA
  */
-@RunWith(SpringRunner.class)
 @WebMvcTest(AccountController.class)
+@AutoConfigureMockMvc
 public class AccountControllerTest {
 
     private static final Instant ct = Instant.now();
 
     private JacksonTester<Object> json;
-    @Rule
-    public final SystemOutRule systemOutRule = new SystemOutRule().muteForSuccessfulTests();
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -75,7 +59,7 @@ public class AccountControllerTest {
     @SpyBean
     private AccountService accountService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(Instant.class, new JsonSerializer<>() {
@@ -106,7 +90,7 @@ public class AccountControllerTest {
 
         mockMvc.perform(get("/api/logs"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[*]", hasSize(3)));
 
@@ -125,7 +109,7 @@ public class AccountControllerTest {
 
         mockMvc.perform(get("/api/accounts"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[*]", hasSize(3)));
 
@@ -141,7 +125,7 @@ public class AccountControllerTest {
 
         mockMvc.perform(get("/api/account/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$.accountNumber").value(100L))
                 .andExpect(jsonPath("$.amount").value(1.0));
 
@@ -177,7 +161,7 @@ public class AccountControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn().getResponse();
 
         // 0.0 : 2.0
@@ -197,8 +181,8 @@ public class AccountControllerTest {
         TransferDTO transfer = TransferDTO.builder().from(100L).to(200L).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/accounts/transfer")
-                .contentType(APPLICATION_JSON)
-                .content(json.write(transfer).getJson()))
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(isEmptyOrNullString()));
 
@@ -212,8 +196,8 @@ public class AccountControllerTest {
         TransferDTO transfer = TransferDTO.builder().amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/accounts/transfer")
-                .contentType(APPLICATION_JSON)
-                .content(json.write(transfer).getJson()))
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(isEmptyOrNullString()));
 
@@ -233,7 +217,7 @@ public class AccountControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn().getResponse();
 
         // 2.0
@@ -253,8 +237,8 @@ public class AccountControllerTest {
         TransferDTO transfer = TransferDTO.builder().to(to.getAccountNumber()).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
-                .contentType(APPLICATION_JSON)
-                .content(json.write(transfer).getJson()))
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(isEmptyOrNullString()));
 
@@ -268,8 +252,8 @@ public class AccountControllerTest {
         TransferDTO transfer = TransferDTO.builder().amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/deposit")
-                .contentType(APPLICATION_JSON)
-                .content(json.write(transfer).getJson()))
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(isEmptyOrNullString()));
 
@@ -289,7 +273,7 @@ public class AccountControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(json.write(transfer).getJson()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$.accountNumber").value(200L))
                 .andExpect(jsonPath("$.amount").value(0.0));
 
@@ -304,8 +288,8 @@ public class AccountControllerTest {
         TransferDTO transfer = TransferDTO.builder().from(200L).amount(new BigDecimal("-1.0")).build();
 
         mockMvc.perform(put("/api/account/withdraw")
-                .contentType(APPLICATION_JSON)
-                .content(json.write(transfer).getJson()))
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(isEmptyOrNullString()));
 
@@ -319,8 +303,8 @@ public class AccountControllerTest {
         TransferDTO transfer = TransferDTO.builder().amount(new BigDecimal("1.0")).build();
 
         mockMvc.perform(put("/api/account/withdraw")
-                .contentType(APPLICATION_JSON)
-                .content(json.write(transfer).getJson()))
+                        .contentType(APPLICATION_JSON)
+                        .content(json.write(transfer).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(isEmptyOrNullString()));
 

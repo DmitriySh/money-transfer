@@ -13,7 +13,7 @@ import java.util.UUID;
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Reaction")
+@Schema(description = "Post reaction response")
 public class PostReactionResponse {
     @Schema(description = "Id of the reaction", requiredMode = Schema.RequiredMode.REQUIRED)
     private UUID reactionId;

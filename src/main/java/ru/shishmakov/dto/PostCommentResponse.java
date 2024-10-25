@@ -13,7 +13,7 @@ import java.util.UUID;
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Reaction")
+@Schema(description = "Post comment response")
 public class PostCommentResponse {
     @Schema(description = "Id of the comment", requiredMode = Schema.RequiredMode.REQUIRED)
     private UUID commentId;

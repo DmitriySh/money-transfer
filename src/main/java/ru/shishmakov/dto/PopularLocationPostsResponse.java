@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Posts by coordinates location")
+@Schema(description = "Popular posts by coordinates location")
 public class PopularLocationPostsResponse {
     @Schema(description = "Popular posts", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<PostGetResponse> posts;

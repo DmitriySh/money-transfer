@@ -441,30 +441,131 @@ public class SocialNetworkController {
     // ============= users ============= //
 
 
-//    @Operation(
-//            summary = "Get user",
-//            description = "Get user by id",
-//            tags = {"users"}
-//    )
-//    @ApiResponses({
-//            @ApiResponse(responseCode = "200", description = "OK"),
-//            @ApiResponse(responseCode = "404", description = "Not Found"),
-//            @ApiResponse(responseCode = "500", description = "Internal Server Error")
-//    })
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping(path = "/users/{userId}", produces = "application/json")
-//    public PostGetResponse getUserById(
-//            @Parameter(description = "User id")
-//            @PathVariable UUID userId
-//    ) {
-//        return PostGetResponse.builder()
-//                .postUserId(UUID.randomUUID())
-//                .postId(postId)
-//                .text("post text")
-//                .coordinateX(0.0)
-//                .coordinateY(0.1)
-//                .createdAt(Instant.now())
-//                .updatedAt(Instant.now().plus(3, ChronoUnit.MINUTES))
-//                .build();
-//    }
+    @Operation(
+            summary = "Get user info",
+            description = "Get user by id",
+            tags = {"users"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "/users/{userId}", produces = "application/json")
+    public UserResponse getUserById(
+            @Parameter(description = "User id")
+            @PathVariable UUID userId
+    ) {
+        return UserResponse.builder()
+                .userId(userId)
+                .fullName("Иван Иванович Иванов")
+                .description("text about themself")
+                .email("email@mail.ru")
+                .createdAt(Instant.now())
+                .build();
+    }
+
+    @Operation(
+            summary = "Get users info",
+            description = "Get users by ids",
+            tags = {"users"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "/users}", produces = "application/json")
+    public List<UserResponse> getUserById(
+            @Parameter(description = "User ids")
+            @RequestParam List<UUID> userIds
+    ) {
+        return List.of(
+                UserResponse.builder()
+                        .userId(UUID.randomUUID())
+                        .fullName("Иван Иванович Иванов")
+                        .description("text about themself")
+                        .icon("https://image.ru")
+                        .email("email@mail.ru")
+                        .createdAt(Instant.now())
+                        .build()
+        );
+    }
+
+
+    // ============= subscriptions ============= //
+
+
+    @Operation(
+            summary = "Get user subscriptions",
+            description = "Get all user subscriptions by id",
+            tags = {"subscriptions"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "/users/{userId}/subscriptions", produces = "application/json")
+    public List<UserSubscriptionsResponse> getUserSubscriptions(
+            @Parameter(description = "User id")
+            @PathVariable UUID userId,
+            @Parameter(description = "The limit of records")
+            @RequestParam(required = false, defaultValue = "10") int limit,
+            @Parameter(description = "The offset of records")
+            @RequestParam(required = false, defaultValue = "0") int offset
+    ) {
+        return List.of(
+                UserSubscriptionsResponse.builder()
+                        .userId(userId)
+                        .followingUserId(UUID.randomUUID())
+                        .build()
+        );
+    }
+
+    @Operation(
+            summary = "Subscribe to a user",
+            description = "User subscribes to another user",
+            tags = {"subscriptions"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(path = "/users/{userId}/subscriptions", produces = "application/json")
+    public UserSubscriptionsResponse addUserSubscribe(
+            @Parameter(description = "User id")
+            @PathVariable UUID userId,
+            @Parameter(description = "User id being followed")
+            @RequestParam UUID followingUserId
+    ) {
+        return UserSubscriptionsResponse.builder()
+                .userId(userId)
+                .followingUserId(followingUserId)
+                .build();
+    }
+
+    @Operation(
+            summary = "Delete user subscription",
+            description = "Delete user subscription by id",
+            tags = {"subscriptions"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "No Content"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(path = "/subscriptions/{subscriptionId}/")
+    public void deleteUserSubscriptionsById(
+            @Parameter(description = "Subscription id between users")
+            @PathVariable UUID subscriptionId
+
+    ) {
+        // delete comment
+    }
 }

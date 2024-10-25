@@ -538,7 +538,7 @@ public class SocialNetworkController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/users/{userId}/subscriptions", produces = "application/json")
-    public UserSubscriptionsResponse addUserSubscribe(
+    public UserSubscriptionsResponse addUserSubscription(
             @Parameter(description = "User id")
             @PathVariable UUID userId,
             @Parameter(description = "User id being followed")
@@ -561,7 +561,7 @@ public class SocialNetworkController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/subscriptions/{subscriptionId}/")
-    public void deleteUserSubscriptionsById(
+    public void deleteUserSubscriptionById(
             @Parameter(description = "Subscription id between users")
             @PathVariable UUID subscriptionId
 

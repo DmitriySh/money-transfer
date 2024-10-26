@@ -164,11 +164,13 @@ public class SocialNetworkController {
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(path = "/posts/{postId}", produces = "application/json", consumes = "application/json")
     public PostShortResponse updatePost(
+            @Parameter(description = "Post id")
+            @PathVariable UUID postId,
             @RequestBody PostUpdateRequest postRequest
     ) {
         return PostShortResponse.builder()
                 .postUserId(postRequest.getPostUserId())
-                .postId(postRequest.getPostId())
+                .postId(postId)
                 .build();
     }
 

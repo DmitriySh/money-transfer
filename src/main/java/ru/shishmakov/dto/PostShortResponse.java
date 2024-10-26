@@ -16,7 +16,7 @@ import java.util.UUID;
 @Schema(description = "Short post info")
 public class PostShortResponse {
     @Schema(description = "Id of the post author", requiredMode = RequiredMode.REQUIRED)
-    private UUID userId;
+    private UUID postUserId;
     @Schema(description = "Id of the post", requiredMode = RequiredMode.REQUIRED)
     private UUID postId;
 }

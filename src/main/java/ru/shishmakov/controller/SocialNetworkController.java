@@ -47,14 +47,14 @@ public class SocialNetworkController {
             @RequestBody PostCreateRequest postRequest
     ) {
         return PostShortResponse.builder()
-                .userId(UUID.randomUUID())
+                .postUserId(postRequest.getPostUserId())
                 .postId(UUID.randomUUID())
                 .build();
     }
 
     @Operation(
-            summary = "Get feed of posts",
-            description = "Get user's feed of posts",
+            summary = "Get feed of posts with pagination",
+            description = "Get user's feed of posts with pagination",
             tags = {"posts"}
     )
     @ApiResponses({
@@ -87,8 +87,8 @@ public class SocialNetworkController {
     }
 
     @Operation(
-            summary = "Get popular posts",
-            description = "Get popular users posts by coordinates location",
+            summary = "Get popular posts with pagination",
+            description = "Get popular users posts by coordinates location with pagination",
             tags = {"posts"}
     )
     @ApiResponses({
@@ -167,7 +167,7 @@ public class SocialNetworkController {
             @RequestBody PostUpdateRequest postRequest
     ) {
         return PostShortResponse.builder()
-                .userId(UUID.randomUUID())
+                .postUserId(postRequest.getPostUserId())
                 .postId(postRequest.getPostId())
                 .build();
     }
@@ -215,7 +215,9 @@ public class SocialNetworkController {
     ) {
         return PostAttachmentResponse.builder()
                 .postId(postId)
+                .postUserId(UUID.randomUUID())
                 .attachmentId(UUID.randomUUID())
+                .contentType(FileType.IMAGE)
                 .fileName("file name")
                 .url("ya.ru/image.png")
                 .createdAt(Instant.now())
@@ -242,7 +244,9 @@ public class SocialNetworkController {
         return List.of(
                 PostAttachmentResponse.builder()
                         .postId(postId)
+                        .postUserId(UUID.randomUUID())
                         .attachmentId(UUID.randomUUID())
+                        .contentType(FileType.IMAGE)
                         .fileName("file name")
                         .url("ya.ru/image.png")
                         .createdAt(Instant.now())
@@ -288,7 +292,6 @@ public class SocialNetworkController {
             @Parameter(description = "Post id")
             @PathVariable UUID postId,
             @RequestBody PostReactionRequest postReactionRequest
-
     ) {
         return PostReactionShortResponse.builder()
                 .postId(postId)
@@ -316,6 +319,7 @@ public class SocialNetworkController {
                 PostReactionResponse.builder()
                         .reactionId(UUID.randomUUID())
                         .postId(postId)
+                        .reactionUserId(UUID.randomUUID())
                         .reactionType(ReactionType.LIKE)
                         .createdAt(Instant.now())
                         .build()
@@ -461,14 +465,15 @@ public class SocialNetworkController {
                 .userId(userId)
                 .fullName("Иван Иванович Иванов")
                 .description("text about themself")
+                .iconUrl("ya.ru/profile-12.jpg")
                 .email("email@mail.ru")
                 .createdAt(Instant.now())
                 .build();
     }
 
     @Operation(
-            summary = "Get users info",
-            description = "Get users by ids",
+            summary = "Get users by ids",
+            description = "Get users profiles by ids",
             tags = {"users"}
     )
     @ApiResponses({
@@ -487,7 +492,7 @@ public class SocialNetworkController {
                         .userId(UUID.randomUUID())
                         .fullName("Иван Иванович Иванов")
                         .description("text about themself")
-                        .icon("https://image.ru")
+                        .iconUrl("https://image.ru")
                         .email("email@mail.ru")
                         .createdAt(Instant.now())
                         .build()
@@ -499,8 +504,8 @@ public class SocialNetworkController {
 
 
     @Operation(
-            summary = "Get user subscriptions",
-            description = "Get all user subscriptions by id",
+            summary = "Get user subscriptions with pagination",
+            description = "Get all user subscriptions by id with pagination",
             tags = {"subscriptions"}
     )
     @ApiResponses({

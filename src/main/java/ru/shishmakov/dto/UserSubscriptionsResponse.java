@@ -9,7 +9,6 @@ import lombok.experimental.SuperBuilder;
 import java.util.UUID;
 
 @Data
-//@EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,6 +18,6 @@ public class UserSubscriptionsResponse {
     private UUID subscriptionId;
     @Schema(description = "User id", requiredMode = Schema.RequiredMode.REQUIRED)
     private UUID userId;
-    @Schema(description = "User who is subscribed to", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "User id who is subscribed to", requiredMode = Schema.RequiredMode.REQUIRED)
     private UUID followingUserId;
 }

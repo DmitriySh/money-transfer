@@ -22,7 +22,7 @@ public class UserResponse {
     @Schema(description = "Brief information about the user", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String description;
     @Schema(description = "User profile icon", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String icon;
+    private String iconUrl;
     @Schema(description = "User email", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
     @Schema(description = "User creation time", requiredMode = Schema.RequiredMode.REQUIRED)

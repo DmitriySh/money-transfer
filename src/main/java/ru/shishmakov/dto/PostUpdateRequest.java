@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
@@ -14,5 +16,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Schema(description = "Update post")
 public class PostUpdateRequest extends PostWithIdDto {
-
+    @Schema(description = "Id of the post author", requiredMode = Schema.RequiredMode.REQUIRED)
+    private UUID postUserId;
 }

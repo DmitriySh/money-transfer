@@ -475,7 +475,7 @@ public class SocialNetworkController {
 
     @Operation(
             summary = "Get users by ids",
-            description = "Get users profiles by ids",
+            description = "Get user profiles by ids",
             tags = {"users"}
     )
     @ApiResponses({

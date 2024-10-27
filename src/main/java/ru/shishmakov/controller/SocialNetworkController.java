@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @OpenAPIDefinition(info = @Info(
         title = "Social network for travelers API",
-        description = "Current API describes interaction with Social network",
+        description = "Current REST API describes interaction with Social network",
         version = "1.0.0"
 ))
 @Slf4j

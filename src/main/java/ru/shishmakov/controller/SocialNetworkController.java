@@ -484,8 +484,8 @@ public class SocialNetworkController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(path = "/users}", produces = "application/json")
-    public List<UserResponse> getUserById(
+    @GetMapping(path = "/users", produces = "application/json")
+    public List<UserResponse> getUsersByIds(
             @Parameter(description = "User ids")
             @RequestParam List<UUID> userIds
     ) {

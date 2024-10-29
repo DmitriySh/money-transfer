@@ -197,32 +197,33 @@ public class SocialNetworkController {
 
 
     @Operation(
-            summary = "New post attachment",
-            description = "User make a new post attachment",
+            summary = "New attachment",
+            description = "User make a new attachment",
             tags = {"attachments"}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(path = "/posts/{postId}/attachments", produces = "application/json", consumes = "multipart/form-data")
-    public PostAttachmentResponse uploadPostAttachment(
-            @Parameter(description = "Post id")
-            @PathVariable UUID postId,
-            @Parameter(description = "Post attachment files")
-            @RequestParam("file") MultipartFile postAttachments
-
+    @PostMapping(path = "/attachments", produces = "application/json", consumes = "multipart/form-data")
+    public AttachmentShortResponse uploadAttachment(
+            @Parameter(description = "Resource id that the attachment belongs to")
+            @RequestParam(required = false) UUID resourceId,
+            @Parameter(description = "Resource type that the attachment belongs to", example = "POST")
+            @RequestParam(required = false) ResourceType resourceType,
+            @Parameter(description = "Attachment type", example = "IMAGE")
+            @RequestParam AttachmentType attachmentType,
+            @Parameter(description = "Attachment file content")
+            @RequestParam("file") MultipartFile attachmentContent
     ) {
-        return PostAttachmentResponse.builder()
-                .postId(postId)
-                .postUserId(UUID.randomUUID())
+        return AttachmentShortResponse.builder()
+                .resourceId(resourceId)
                 .attachmentId(UUID.randomUUID())
-                .contentType(FileType.IMAGE)
                 .fileName("file name")
                 .url("ya.ru/image.png")
-                .createdAt(Instant.now())
                 .build();
     }
 
@@ -237,18 +238,18 @@ public class SocialNetworkController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(path = "/posts/{postId}/attachments", produces = "application/json", consumes = "multipart/form-data")
-    public List<PostAttachmentResponse> getAllPostAttachments(
+    @GetMapping(path = "/posts/{postId}/attachments", produces = "application/json")
+    public List<AttachmentResponse> getAllPostAttachments(
             @Parameter(description = "Post id")
             @PathVariable UUID postId
-
     ) {
         return List.of(
-                PostAttachmentResponse.builder()
-                        .postId(postId)
-                        .postUserId(UUID.randomUUID())
+                AttachmentResponse.builder()
+                        .resourceId(postId)
+                        .resourceType(ResourceType.POST)
+                        .userId(UUID.randomUUID())
                         .attachmentId(UUID.randomUUID())
-                        .contentType(FileType.IMAGE)
+                        .attachmentType(AttachmentType.IMAGE)
                         .fileName("file name")
                         .url("ya.ru/image.png")
                         .createdAt(Instant.now())
@@ -289,7 +290,7 @@ public class SocialNetworkController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(path = "/posts/{postId}/reactions", produces = "application/json", consumes = "multipart/form-data")
+    @PostMapping(path = "/posts/{postId}/reactions", produces = "application/json", consumes = "application/json")
     public PostReactionShortResponse addPostReaction(
             @Parameter(description = "Post id")
             @PathVariable UUID postId,
@@ -365,7 +366,7 @@ public class SocialNetworkController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(path = "/posts/{postId}/comments", produces = "application/json", consumes = "multipart/form-data")
+    @PostMapping(path = "/posts/{postId}/comments", produces = "application/json", consumes = "application/json")
     public PostCommentShortResponse addPostComment(
             @Parameter(description = "Post id")
             @PathVariable UUID postId,

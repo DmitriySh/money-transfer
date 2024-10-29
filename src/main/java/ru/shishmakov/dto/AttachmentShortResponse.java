@@ -12,14 +12,14 @@ import java.util.UUID;
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Attachment")
-public class AttachmentDto {
-    @Schema(description = "Attachment file id", requiredMode = Schema.RequiredMode.REQUIRED)
+@Schema(description = "Attachment short response")
+public class AttachmentShortResponse {
+    @Schema(description = "Id of the resource", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private UUID resourceId;
+    @Schema(description = "Id of the attachment file", requiredMode = Schema.RequiredMode.REQUIRED)
     private UUID attachmentId;
-    @Schema(description = "File content type", requiredMode = Schema.RequiredMode.REQUIRED)
-    private FileType contentType;
     @Schema(description = "Attachment file name", requiredMode = Schema.RequiredMode.REQUIRED)
     private String fileName;
-    @Schema(description = "The URL of the attachment file", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Attachment file URL", requiredMode = Schema.RequiredMode.REQUIRED)
     private String url;
 }

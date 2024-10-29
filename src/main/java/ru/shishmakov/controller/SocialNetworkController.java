@@ -302,8 +302,8 @@ public class SocialNetworkController {
     }
 
     @Operation(
-            summary = "Get post reactions",
-            description = "User get all post reactions",
+            summary = "Get post reactions with pagination",
+            description = "User get all post reactions with pagination",
             tags = {"reactions"}
     )
     @ApiResponses({
@@ -315,7 +315,11 @@ public class SocialNetworkController {
     @GetMapping(path = "/posts/{postId}/reactions", produces = "application/json")
     public List<PostReactionResponse> getAllPostReactions(
             @Parameter(description = "Post id")
-            @PathVariable UUID postId
+            @PathVariable UUID postId,
+            @Parameter(description = "The limit of records")
+            @RequestParam(required = false, defaultValue = "10") int limit,
+            @Parameter(description = "The offset of records")
+            @RequestParam(required = false, defaultValue = "0") int offset
     ) {
         return List.of(
                 PostReactionResponse.builder()

@@ -379,8 +379,8 @@ public class SocialNetworkController {
     }
 
     @Operation(
-            summary = "Get post comments",
-            description = "User get all post comments",
+            summary = "Get post comments with pagination",
+            description = "User get all post comments with pagination",
             tags = {"comments"}
     )
     @ApiResponses({
@@ -392,7 +392,10 @@ public class SocialNetworkController {
     @GetMapping(path = "/posts/{postId}/comments", produces = "application/json")
     public List<PostCommentResponse> getAllPostComments(
             @Parameter(description = "Post id")
-            @PathVariable UUID postId
+            @PathVariable UUID postId,
+            @RequestParam(required = false, defaultValue = "100") int limit,
+            @Parameter(description = "The offset of records")
+            @RequestParam(required = false, defaultValue = "0") int offset
     ) {
         return List.of(
                 PostCommentResponse.builder()

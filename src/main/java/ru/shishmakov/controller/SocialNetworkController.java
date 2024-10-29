@@ -317,7 +317,7 @@ public class SocialNetworkController {
             @Parameter(description = "Post id")
             @PathVariable UUID postId,
             @Parameter(description = "The limit of records")
-            @RequestParam(required = false, defaultValue = "10") int limit,
+            @RequestParam(required = false, defaultValue = "100") int limit,
             @Parameter(description = "The offset of records")
             @RequestParam(required = false, defaultValue = "0") int offset
     ) {
